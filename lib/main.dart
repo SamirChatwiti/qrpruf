@@ -117,6 +117,7 @@ class _MyAppState extends ConsumerState<MyApp> {
     return MaterialApp.router(
       routerConfig: router,
       title: 'QRpruf',
+	  debugShowCheckedModeBanner: false,
       locale: const Locale('ar'),
       supportedLocales: AppLocalizations.supportedLocales,
       localizationsDelegates: const [

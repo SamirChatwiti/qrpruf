@@ -42,6 +42,18 @@ Instead of trusting a user declaration, the system produces a structured proof o
 
 ---
 
+## Product Screenshots
+
+| Dashboard                                                 | Proof Purpose Selection                                                        | Evidence Review                                                |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------ | -------------------------------------------------------------- |
+| ![QRPRUF Dashboard](assets/screenshots/01-dashboard.jpeg) | ![Proof Purpose Selection](assets/screenshots/02-proof-purpose-selection.jpeg) | ![Evidence Review](assets/screenshots/03-evidence-review.jpeg) |
+
+| QR Badge Generated                                                   | Proof Verification                                                               |
+| -------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| ![QR Badge Generated](assets/screenshots/04-qr-badge-generated.jpeg) | ![Proof Verification Valid](assets/screenshots/05-proof-verification-valid.jpeg) |
+
+---
+
 ## Key Features
 
 * Signed QR proof badge generation
