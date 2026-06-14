@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Système de Détection Intelligent — Café Restaurant</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --green:#2D6A4F; --green-mid:#40916C; --green-light:#52B788; --green-bg:#D8F3DC;
+      --amber:#F59E0B; --amber-bg:#FEF3C7;
+      --red:#DC2626; --red-bg:#FEF2F2;
+      --navy:#0D1F3C; --navy-soft:#1A3455;
+      --text:#1A1A2E; --muted:#6B7280; --border:#E5E7EB; --bg:#FFFFFF; --bg-alt:#F8FAF8;
+    }
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter',sans-serif;color:var(--text);background:#eef2ee;}
+
+    /* Toolbar */
+    .toolbar{position:fixed;top:0;left:0;right:0;z-index:100;background:white;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .tb-left{display:flex;align-items:center;gap:14px;}
+    .tb-logo{font-weight:800;font-size:16px;color:var(--navy);}
+    .tb-tag{font-size:12px;color:var(--green);background:var(--green-bg);padding:3px 10px;border-radius:6px;font-weight:700;}
+    .btn-print{background:var(--green);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.2s;}
+    .btn-print:hover{background:var(--green-mid);}
+
+    /* Pages */
+    .pages{padding:70px 24px 40px;display:flex;flex-direction:column;gap:24px;max-width:900px;margin:0 auto;}
+    .page{background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);position:relative;}
+    .page-num{position:absolute;bottom:14px;right:18px;font-size:11px;color:rgba(0,0,0,0.18);font-weight:600;}
+    .page-num.light{color:rgba(255,255,255,0.25);}
+
+    /* Cover */
+    .cover{background:linear-gradient(135deg,var(--navy) 0%,var(--navy-soft) 50%,#1B3A28 100%);padding:80px 60px;text-align:center;color:white;min-height:480px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .cover::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:800px;height:800px;background:radial-gradient(circle,rgba(82,183,136,0.12) 0%,transparent 70%);pointer-events:none;}
+    .cover-inner{position:relative;z-index:1;}
+    .cover-badge{display:inline-flex;align-items:center;gap:8px;background:rgba(82,183,136,0.15);border:1px solid rgba(82,183,136,0.35);border-radius:30px;padding:7px 18px;font-size:12px;color:var(--green-light);font-weight:700;margin-bottom:28px;letter-spacing:0.6px;text-transform:uppercase;}
+    .cover h1{font-size:44px;font-weight:800;color:white;line-height:1.15;margin-bottom:20px;}
+    .cover h1 span{color:var(--green-light);}
+    .cover-sub{font-size:17px;color:rgba(255,255,255,0.62);line-height:1.75;margin-bottom:40px;max-width:540px;}
+    .cover-meta{display:flex;align-items:center;justify-content:center;gap:28px;font-size:13px;color:rgba(255,255,255,0.4);}
+
+    /* Sections */
+    .section{padding:48px 56px;}
+    .dark-section{background:var(--navy);padding:48px 56px;color:white;}
+    .section-tag{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:16px;}
+    .st-green{color:var(--green);background:var(--green-bg);}
+    .st-amber{color:#92400E;background:var(--amber-bg);}
+    .st-red{color:var(--red);background:var(--red-bg);}
+    .st-navy{color:var(--green-light);background:rgba(82,183,136,0.15);}
+    .section h2{font-size:28px;font-weight:800;color:var(--navy);margin-bottom:20px;line-height:1.2;}
+    .dark-section h2{color:white;}
+    .section p,.dark-section p{font-size:14px;color:var(--muted);line-height:1.75;margin-bottom:14px;}
+    .dark-section p{color:rgba(255,255,255,0.62);}
+
+    /* Grids */
+    .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:20px;}
+    .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px;}
+
+    /* Cards */
+    .card{border:1.5px solid var(--border);border-radius:12px;padding:20px 18px;}
+    .card-green{border-color:rgba(82,183,136,0.4);background:rgba(82,183,136,0.05);}
+    .card-amber{border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.05);}
+    .card h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:8px;}
+    .card p{font-size:13px;color:var(--muted);line-height:1.65;margin:0;}
+    .card .icon{font-size:26px;margin-bottom:10px;display:block;}
+    .card-dark{background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.1);border-radius:12px;padding:18px 16px;}
+    .card-dark h4{color:white;font-size:14px;font-weight:700;margin-bottom:8px;}
+    .card-dark p{color:rgba(255,255,255,0.6);font-size:13px;line-height:1.65;margin:0;}
+    .card-dark .icon{font-size:26px;margin-bottom:10px;display:block;}
+
+    /* Pain cards */
+    .pain-card{background:var(--red-bg);border:1px solid #FECACA;border-radius:12px;padding:18px;}
+    .pain-card .pain-icon{font-size:24px;margin-bottom:8px;display:block;}
+    .pain-card h4{font-size:14px;font-weight:700;color:#991B1B;margin-bottom:6px;}
+    .pain-card p{font-size:13px;color:#7F1D1D;line-height:1.65;margin:0;}
+
+    /* Circuit */
+    .circuit{display:flex;align-items:stretch;gap:0;margin:28px 0;}
+    .circuit-node{flex:1;}
+    .circuit-box{border-radius:14px;padding:22px 14px;margin:0 6px;text-align:center;height:100%;}
+    .cb-green{background:linear-gradient(135deg,var(--green) 0%,var(--green-mid) 100%);}
+    .cb-navy{background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);}
+    .cb-amber{background:linear-gradient(135deg,#92400E 0%,var(--amber) 100%);}
+    .circuit-icon{font-size:30px;margin-bottom:10px;}
+    .circuit-label{font-size:13px;font-weight:800;color:white;margin-bottom:5px;}
+    .circuit-sub{font-size:11px;color:rgba(255,255,255,0.62);line-height:1.5;}
+    .circuit-arrow{display:flex;align-items:center;font-size:22px;color:var(--green-light);flex-shrink:0;padding:0 2px;}
+
+    /* Sol points */
+    .sol-point{display:flex;align-items:flex-start;gap:12px;background:rgba(82,183,136,0.08);border:1px solid rgba(82,183,136,0.25);border-radius:10px;padding:14px 16px;margin-bottom:10px;}
+    .sol-check{width:26px;height:26px;background:var(--green);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:white;font-weight:bold;}
+    .sol-point p{font-size:13px;color:var(--text);line-height:1.65;margin:0;}
+
+    /* Info rows */
+    .info-row{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border);}
+    .info-row:last-child{border-bottom:none;}
+    .info-label{font-size:13px;font-weight:600;color:var(--navy);min-width:170px;flex-shrink:0;}
+    .info-value{font-size:13px;color:var(--muted);line-height:1.6;}
+
+    /* Steps */
+    .steps{display:flex;flex-direction:column;gap:14px;margin-top:20px;}
+    .step{display:flex;align-items:flex-start;gap:16px;}
+    .step-num{width:36px;height:36px;background:var(--green);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;}
+    .step-num.light{background:var(--green-light);color:var(--navy);}
+    .step-content h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:5px;}
+    .step-content h4.white{color:white;}
+    .step-content p{font-size:13px;color:var(--muted);line-height:1.65;margin:0;}
+    .step-content p.white{color:rgba(255,255,255,0.62);}
+
+    /* Highlight & Alert */
+    .highlight{background:var(--green-bg);border:1.5px solid rgba(82,183,136,0.4);border-radius:12px;padding:16px 20px;margin-top:16px;}
+    .highlight p{font-size:13px;color:var(--green);font-weight:600;margin:0;line-height:1.65;}
+    .alert{background:var(--amber-bg);border:1.5px solid rgba(245,158,11,0.4);border-radius:12px;padding:14px 18px;margin-top:14px;}
+    .alert p{font-size:13px;color:#92400E;margin:0;line-height:1.65;}
+
+    /* Tables */
+    .spec-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:13px;}
+    .spec-table th{text-align:left;padding:10px 14px;background:var(--green);color:white;font-weight:700;}
+    .spec-table th:first-child{border-radius:8px 0 0 0;}
+    .spec-table th:last-child{border-radius:0 8px 0 0;}
+    .spec-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:#374151;vertical-align:top;}
+    .spec-table tr:last-child td{border-bottom:none;}
+    .spec-table tr:nth-child(even) td{background:var(--bg-alt);}
+
+    .budget-table{width:100%;border-collapse:collapse;margin-top:16px;font-size:14px;}
+    .budget-table th{text-align:left;padding:12px 16px;background:var(--navy);color:white;font-weight:700;}
+    .budget-table td{padding:12px 16px;border-bottom:1px solid var(--border);color:#374151;}
+    .budget-table tr:nth-child(even) td{background:var(--bg-alt);}
+    .budget-table tr:last-child td{border-bottom:none;font-weight:700;background:var(--green-bg);color:var(--green);font-size:15px;}
+    .price{font-weight:700;color:var(--navy);}
+
+    /* Mockup dashboard */
+    .mock{background:var(--navy);border-radius:12px;overflow:hidden;margin-top:0;}
+    .mock-bar-top{background:#1A3455;padding:8px 14px;display:flex;align-items:center;gap:6px;}
+    .dot{width:8px;height:8px;border-radius:50%;}
+    .mock-label{margin-left:8px;font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;}
+    .mock-body{padding:16px;}
+    .mock-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px;}
+    .msc{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;}
+    .msc-v{font-size:18px;font-weight:800;color:var(--green-light);}
+    .msc-v.amber{color:var(--amber);}
+    .msc-v.good{color:#4ADE80;}
+    .msc-l{font-size:9px;color:rgba(255,255,255,0.35);margin-top:3px;}
+    .mock-tbl{display:flex;flex-direction:column;gap:5px;}
+    .mtr{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:6px;padding:8px 10px;}
+    .mtr-n{font-size:11px;font-weight:600;color:rgba(255,255,255,0.78);flex:1;}
+    .mtr-bar{flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+    .mtr-fill{height:100%;border-radius:3px;background:var(--green-light);}
+    .mtr-fill.amber{background:var(--amber);}
+    .mtr-fill.red{background:#F87171;}
+    .mtr-count{font-size:11px;font-weight:700;color:white;min-width:24px;text-align:right;}
+    .mbadge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:4px;white-space:nowrap;}
+    .badge-ok{background:rgba(82,183,136,0.18);color:var(--green-light);}
+    .badge-warn{background:rgba(245,158,11,0.18);color:var(--amber);}
+    .badge-err{background:rgba(248,113,113,0.18);color:#F87171;}
+
+    /* Cam diagram */
+    .cam-diagram{background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:20px;margin:14px 0;text-align:center;}
+    .cam-zone{display:inline-block;background:white;border:2px dashed var(--green);border-radius:10px;padding:14px 20px;margin:6px;}
+    .cam-zone h5{font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px;}
+    .cam-zone p{font-size:11px;color:var(--muted);margin:0;}
+
+    /* Divider */
+    .divider{height:1px;background:var(--border);margin:24px 0;}
+
+    /* Print */
+    @media print{
+      body{background:white;}
+      .toolbar{display:none!important;}
+      .pages{padding:0;gap:0;max-width:100%;}
+      .page{border-radius:0;box-shadow:none;page-break-after:always;margin:0;}
+    }
+
+    /* Mobile */
+    @media(max-width:640px){
+      .toolbar{padding:8px 14px;}
+      .tb-tag{display:none;}
+      .pages{padding:58px 10px 28px;gap:14px;}
+      .section,.dark-section{padding:28px 20px;}
+      .cover{padding:50px 22px;min-height:auto;}
+      .cover h1{font-size:26px;}
+      .grid-2,.grid-3{grid-template-columns:1fr;}
+      .circuit{flex-direction:column;gap:8px;}
+      .circuit-arrow{transform:rotate(90deg);}
+      .mock-stats{grid-template-columns:repeat(2,1fr);}
+      .info-label{min-width:130px;}
+      .budget-table{font-size:12px;}
+      .budget-table td,.budget-table th{padding:9px 10px;}
+      .spec-table{font-size:12px;}
+      .spec-table td,.spec-table th{padding:8px 10px;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="tb-left">
+    <span class="tb-logo">📷 CaféDetect</span>
+    <span class="tb-tag">Proposition Technique — Café Restaurant</span>
+  </div>
+  <button class="btn-print" onclick="window.print()">🖨 Télécharger en PDF</button>
+</div>
+
+<div class="pages">
+
+  <!-- PAGE 1 : COUVERTURE -->
+  <div class="page">
+    <div class="cover">
+      <div class="cover-inner">
+        <div class="cover-badge">📷 Système de Détection Intelligent</div>
+        <h1>Gestion Automatique<br><span>du Comptoir & du Stock</span></h1>
+        <p class="cover-sub">Un système de détection par caméra et intelligence artificielle pour suivre automatiquement les produits servis et les matières premières consommées — sans aucune intervention humaine.</p>
+        <div class="cover-meta">
+          <span>🔒 Document Confidentiel</span>
+          <span>📅 2026</span>
+          <span>✉️ schatwiti@sanadidari.com</span>
+        </div>
+      </div>
+    </div>
+    <span class="page-num light">1 / 12</span>
+  </div>
+
+  <!-- PAGE 2 : PROBLÈME -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-red">Le problème actuel</span>
+      <h2>Pourquoi la gestion manuelle ne suffit plus</h2>
+      <p>Dans un café-restaurant, il est impossible de tout vérifier manuellement en temps réel. La caisse enregistre les ventes, mais personne ne valide que chaque produit enregistré a réellement été servi — ni que les matières premières consommées correspondent exactement aux commandes.</p>
+      <div class="grid-2">
+        <div class="pain-card"><span class="pain-icon">👁️</span><h4>Aucune vérification en temps réel</h4><p>Le responsable ne peut pas être au comptoir et en cuisine simultanément. Des écarts passent inaperçus tout au long de la journée.</p></div>
+        <div class="pain-card"><span class="pain-icon">📦</span><h4>Stock non tracé automatiquement</h4><p>Les matières premières sortent du stock sans validation automatique. Impossible de savoir ce qui a été réellement consommé en fin de journée.</p></div>
+        <div class="pain-card"><span class="pain-icon">📊</span><h4>Statistiques peu fiables</h4><p>Les données de vente du POS ne reflètent pas toujours la réalité physique. Les analyses de fin de journée sont incomplètes ou imprécises.</p></div>
+        <div class="pain-card"><span class="pain-icon">🕵️</span><h4>Fraude ou erreur indétectable</h4><p>Un produit servi sans être enregistré, ou une matière première consommée en excès — impossible à détecter sans système automatique.</p></div>
+      </div>
+    </div>
+    <span class="page-num">2 / 12</span>
+  </div>
+
+  <!-- PAGE 3 : SOLUTION GLOBALE -->
+  <div class="page">
+    <div class="dark-section">
+      <span class="section-tag st-navy">Notre solution</span>
+      <h2>Un circuit de traçabilité 100% automatique</h2>
+      <p>Deux caméras, un moteur d'intelligence artificielle, et un tableau de bord unifié. Chaque produit est tracé depuis sa sortie du stock jusqu'au moment où il est servi au client — sans aucune intervention humaine.</p>
+
+      <div class="circuit">
+        <div class="circuit-node">
+          <div class="circuit-box cb-green">
+            <div class="circuit-icon">📦</div>
+            <div class="circuit-label">STOCK</div>
+            <div class="circuit-sub">Caméra 2 détecte les matières premières qui sortent</div>
+          </div>
+        </div>
+        <div class="circuit-arrow">→</div>
+        <div class="circuit-node">
+          <div class="circuit-box cb-navy">
+            <div class="circuit-icon">👨‍🍳</div>
+            <div class="circuit-label">CUISINE</div>
+            <div class="circuit-sub">Transformation et préparation des produits</div>
+          </div>
+        </div>
+        <div class="circuit-arrow">→</div>
+        <div class="circuit-node">
+          <div class="circuit-box cb-amber">
+            <div class="circuit-icon">☕</div>
+            <div class="circuit-label">COMPTOIR</div>
+            <div class="circuit-sub">Caméra 1 détecte les produits servis au client</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="grid-3" style="margin-top:0;">
+        <div class="card-dark"><span class="icon">✅</span><h4>Matière sortie + Produit servi</h4><p>Circuit complet validé automatiquement. Tout est conforme — enregistré comme normal.</p></div>
+        <div class="card-dark"><span class="icon">⚠️</span><h4>Matière sortie, rien servi</h4><p>Alerte : perte, gaspillage ou consommation non enregistrée en cuisine. Le système le signale.</p></div>
+        <div class="card-dark"><span class="icon">🚨</span><h4>Produit servi, rien sorti du stock</h4><p>Alerte critique : produit servi sans traçabilité stock — fraude ou oubli d'enregistrement possible.</p></div>
+      </div>
+    </div>
+    <span class="page-num light">3 / 12</span>
+  </div>
+
+  <!-- PAGE 4 : CAMÉRA 1 — COMPTOIR -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-amber">Caméra 1 — Comptoir</span>
+      <h2>Détection des produits servis</h2>
+      <p>Cette caméra est positionnée au-dessus de la zone de service du comptoir. Elle capture en continu et identifie automatiquement chaque produit au moment précis où il est remis au client.</p>
+
+      <div class="grid-2">
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">📷 Matériel recommandé</h3>
+          <div class="card card-green" style="margin-bottom:14px;">
+            <h4>Logitech C920 / C922 HD Pro</h4>
+            <p>Caméra USB 1080p Full HD à 30 images par seconde. Excellente qualité d'image en lumière intérieure. Compatible Windows, Linux et macOS. Plug & play — aucune configuration réseau nécessaire.</p>
+          </div>
+          <div class="info-row"><span class="info-label">Résolution</span><span class="info-value">1920 × 1080 (Full HD)</span></div>
+          <div class="info-row"><span class="info-label">Fréquence images</span><span class="info-value">30 images par seconde</span></div>
+          <div class="info-row"><span class="info-label">Connexion</span><span class="info-value">USB 3.0 — câble 1,5m inclus</span></div>
+          <div class="info-row"><span class="info-label">Champ de vision</span><span class="info-value">78° — couvre un comptoir standard</span></div>
+          <div class="info-row"><span class="info-label">Compatibilité</span><span class="info-value">Windows 10/11, macOS, Linux</span></div>
+          <div class="info-row"><span class="info-label">Prix estimé</span><span class="info-value" style="font-weight:700;color:var(--green);">~60 €</span></div>
+        </div>
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">📍 Positionnement</h3>
+          <div class="cam-diagram">
+            <div style="font-size:36px;margin-bottom:8px;">📷</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Fixée en hauteur (60 à 80 cm au-dessus du comptoir)<br>orientée vers la zone de service, vue de dessus</div>
+            <div class="cam-zone"><h5>Zone couverte</h5><p>Plateau de service<br>Sortie des produits vers le client</p></div>
+          </div>
+          <div class="alert"><p>⚠️ <strong>Important :</strong> la caméra doit voir clairement le produit au moment où il est posé sur le plateau. Éviter les contre-jours (fenêtres derrière). Un éclairage LED au-dessus du comptoir améliore la précision.</p></div>
+        </div>
+      </div>
+    </div>
+    <span class="page-num">4 / 12</span>
+  </div>
+
+  <!-- PAGE 5 : CAMÉRA 2 — STOCK -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-green">Caméra 2 — Stock</span>
+      <h2>Détection des matières premières sortantes</h2>
+      <p>Cette caméra surveille la zone de passage entre le stock et la cuisine (porte, couloir ou étagères). Elle enregistre automatiquement chaque matière première qui quitte le stock, même en lumière réduite grâce à sa vision infrarouge.</p>
+
+      <div class="grid-2">
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">📷 Matériel recommandé</h3>
+          <div class="card card-green" style="margin-bottom:14px;">
+            <h4>TP-Link Tapo C310 ou Reolink E1 Pro</h4>
+            <p>Caméra IP WiFi 1080p avec vision nocturne infrarouge intégrée. Idéale pour les stocks dont l'éclairage est variable ou parfois éteint. Se connecte au réseau WiFi du restaurant sans câble supplémentaire.</p>
+          </div>
+          <div class="info-row"><span class="info-label">Résolution</span><span class="info-value">1920 × 1080 (Full HD)</span></div>
+          <div class="info-row"><span class="info-label">Vision nocturne IR</span><span class="info-value">Infrarouge — efficace jusqu'à 30m dans le noir</span></div>
+          <div class="info-row"><span class="info-label">Connexion</span><span class="info-value">WiFi 2.4 GHz ou câble Ethernet (RJ45)</span></div>
+          <div class="info-row"><span class="info-label">Alimentation</span><span class="info-value">Câble électrique standard — adaptateur inclus</span></div>
+          <div class="info-row"><span class="info-label">Application</span><span class="info-value">Tapo / Reolink (accès mobile optionnel)</span></div>
+          <div class="info-row"><span class="info-label">Prix estimé</span><span class="info-value" style="font-weight:700;color:var(--green);">~35 €</span></div>
+        </div>
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">📍 Positionnement</h3>
+          <div class="cam-diagram">
+            <div style="font-size:36px;margin-bottom:8px;">📷</div>
+            <div style="font-size:11px;color:var(--muted);margin-bottom:14px;">Fixée au-dessus de la porte ou du passage principal<br>entre le stock et la cuisine — vue de dessus ou de face</div>
+            <div class="cam-zone"><h5>Zone couverte</h5><p>Porte ou passage du stock<br>Zone où les matières transitent</p></div>
+          </div>
+          <div class="highlight"><p>✅ Les emballages distinctifs (sachets, boîtes, barquettes) permettent une identification fiable même en lumière réduite. La vision infrarouge prend le relais si la lumière est éteinte.</p></div>
+        </div>
+      </div>
+    </div>
+    <span class="page-num">5 / 12</span>
+  </div>
+
+  <!-- PAGE 6 : PC CENTRAL & RÉSEAU -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-green">Configuration technique</span>
+      <h2>Le PC central et le réseau</h2>
+      <p>Les deux caméras envoient leurs flux vidéo vers un PC central qui fait tourner le modèle d'intelligence artificielle. Ce PC traite les images en temps réel, enregistre chaque détection et héberge le tableau de bord accessible depuis n'importe quel appareil du réseau local.</p>
+
+      <div class="grid-2" style="margin-bottom:24px;">
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">💻 PC central requis</h3>
+          <div class="info-row"><span class="info-label">Processeur</span><span class="info-value">Intel Core i5 (8e génération ou plus récent)</span></div>
+          <div class="info-row"><span class="info-label">RAM</span><span class="info-value">8 Go minimum — 16 Go recommandé</span></div>
+          <div class="info-row"><span class="info-label">Carte graphique</span><span class="info-value">GPU NVIDIA recommandé (accélère la détection) — pas obligatoire</span></div>
+          <div class="info-row"><span class="info-label">Stockage</span><span class="info-value">256 Go SSD minimum pour les logs et la base de données</span></div>
+          <div class="info-row"><span class="info-label">Système</span><span class="info-value">Windows 10/11 ou Ubuntu Linux</span></div>
+          <div class="info-row"><span class="info-label">Port USB</span><span class="info-value">Minimum 1 port USB 3.0 pour la caméra comptoir</span></div>
+          <div class="highlight"><p>✅ Le PC existant du restaurant peut suffire s'il répond à ces critères. Sinon, un Mini PC à ~200 € (Intel NUC ou équivalent) est suffisant.</p></div>
+        </div>
+        <div>
+          <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">📡 Réseau requis</h3>
+          <div class="info-row"><span class="info-label">Standard WiFi</span><span class="info-value">2.4 GHz ou 5 GHz — box internet standard suffit</span></div>
+          <div class="info-row"><span class="info-label">Réseau local</span><span class="info-value">La caméra stock doit être sur le même réseau que le PC</span></div>
+          <div class="info-row"><span class="info-label">Bande passante</span><span class="info-value">~4 Mbps par caméra IP — réseau local suffit largement</span></div>
+          <div class="info-row"><span class="info-label">Internet requis ?</span><span class="info-value">Non — le système fonctionne entièrement en local, sans connexion internet</span></div>
+          <div class="alert"><p>⚠️ Si le stock est loin du routeur WiFi, préférer un câble Ethernet pour la caméra stock (plus stable et sans coupure). Un répéteur WiFi fonctionne aussi.</p></div>
+        </div>
+      </div>
+
+      <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">🔌 Schéma de connexion complet</h3>
+      <div class="cam-diagram" style="display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;">
+        <div class="cam-zone"><h5>📷 Caméra Comptoir</h5><p>Logitech C920<br>Connexion : USB direct vers PC</p></div>
+        <div style="font-size:22px;color:var(--green);font-weight:700;">+</div>
+        <div class="cam-zone"><h5>📷 Caméra Stock</h5><p>TP-Link Tapo C310<br>Connexion : WiFi → réseau local → PC</p></div>
+        <div style="font-size:22px;color:var(--green);font-weight:700;">→</div>
+        <div class="cam-zone" style="border-color:var(--navy);"><h5>💻 PC Central</h5><p>Modèle IA YOLOv8<br>Base de données + Dashboard web</p></div>
+      </div>
+    </div>
+    <span class="page-num">6 / 12</span>
+  </div>
+
+  <!-- PAGE 7 : MODÈLE IA -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-green">Intelligence Artificielle</span>
+      <h2>Comment fonctionne la détection automatique</h2>
+      <p>Le système utilise <strong>YOLOv8</strong> (You Only Look Once), l'un des modèles de détection d'objets les plus performants et rapides au monde. Il est entraîné spécifiquement sur les produits du café-restaurant pour une reconnaissance précise.</p>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-content">
+            <h4>Collecte des photos (réalisée une seule fois)</h4>
+            <p>On photographie chaque produit du menu (café, cappuccino, plat viande, jus, sandwich…) et chaque matière première du stock (sachets, barquettes, boîtes, bouteilles…) sous plusieurs angles et éclairages différents. Minimum 30 à 50 photos par produit.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-content">
+            <h4>Étiquetage des photos (labellisation)</h4>
+            <p>Chaque photo est annotée : on indique au modèle où se trouve le produit dans l'image et son nom exact. Cette étape est réalisée par notre équipe via un outil spécialisé (Roboflow ou LabelImg). Le client n'intervient pas.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-content">
+            <h4>Entraînement du modèle YOLOv8</h4>
+            <p>Le modèle apprend à reconnaître chaque produit à partir des photos annotées. L'entraînement dure 2 à 6 heures selon le nombre de produits. Il n'est effectué qu'une seule fois, puis mis à jour uniquement si de nouveaux produits sont ajoutés au menu.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-content">
+            <h4>Détection en temps réel (fonctionnement quotidien)</h4>
+            <p>Le modèle analyse le flux vidéo des deux caméras en continu (15 à 30 images par seconde). Chaque produit détecté est automatiquement enregistré avec son nom, l'heure exacte, et la caméra source (stock ou comptoir).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">5</div>
+          <div class="step-content">
+            <h4>Enregistrement et génération d'alertes</h4>
+            <p>Chaque détection est sauvegardée dans la base de données locale. En cas d'anomalie (circuit non validé), une alerte est générée instantanément et visible sur le tableau de bord. Aucune action manuelle n'est nécessaire.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="highlight" style="margin-top:4px;"><p>✅ Une fois entraîné, le modèle fonctionne 24h/24 en toute autonomie. Si le menu évolue, on ajoute simplement les nouvelles photos et on réentraîne en 1 à 2 heures — sans interruption du service.</p></div>
+    </div>
+    <span class="page-num">7 / 12</span>
+  </div>
+
+  <!-- PAGE 8 : TABLE DE CORRESPONDANCES -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-amber">Circuit de traçabilité</span>
+      <h2>Table de correspondances Stock → Produit fini</h2>
+      <p>Le moteur de circuit associe automatiquement chaque matière première sortie du stock au produit fini attendu au comptoir. Cette table est configurée une seule fois lors de l'installation et peut être modifiée à tout moment par le client.</p>
+
+      <table class="spec-table">
+        <thead>
+          <tr>
+            <th>Matière première (Stock — Caméra 2)</th>
+            <th>Produit fini attendu (Comptoir — Caméra 1)</th>
+            <th>Équivalence</th>
+            <th>Délai max cuisine</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>☕ Sachet café moulu</td><td>Café express, café au lait, noisette</td><td>1 sachet = 10 tasses</td><td>5 min</td></tr>
+          <tr><td>🥛 Berlingot / bouteille lait</td><td>Cappuccino, café au lait, lait chaud</td><td>1 berlingot = 4 portions</td><td>5 min</td></tr>
+          <tr><td>🥩 Barquette viande</td><td>Plat viande grillée ou sauce</td><td>1 barquette = 1 assiette</td><td>20 min</td></tr>
+          <tr><td>🍞 Sachet pain de mie</td><td>Sandwich, croque-monsieur, toast</td><td>1 sachet = 4 sandwichs</td><td>10 min</td></tr>
+          <tr><td>🧃 Bouteille jus de fruit</td><td>Jus pressé, cocktail, smoothie</td><td>1 bouteille = 3 verres</td><td>3 min</td></tr>
+          <tr><td>🥚 Boîte d'œufs</td><td>Omelette, œuf plat, œuf à la coque</td><td>1 boîte (6) = 6 assiettes</td><td>10 min</td></tr>
+        </tbody>
+      </table>
+
+      <div class="alert"><p>⚠️ Ces valeurs sont des exemples. Le client définit les correspondances exactes selon son menu réel lors de la phase de configuration initiale. Toute modification est possible à tout moment via une interface simple.</p></div>
+
+      <div class="divider"></div>
+
+      <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">Exemple concret de validation d'un circuit</h3>
+      <div class="sol-point"><div class="sol-check">1</div><p>10h14 — Caméra Stock détecte : <strong>1 barquette viande sort du stock</strong> → le système ouvre un circuit en attente avec un délai maximum de 20 minutes.</p></div>
+      <div class="sol-point"><div class="sol-check">2</div><p>10h28 — Caméra Comptoir détecte : <strong>1 plat viande servi</strong> → le circuit est fermé et validé automatiquement ✅. Enregistré comme normal.</p></div>
+      <div class="sol-point" style="border-color:rgba(245,158,11,0.4);background:rgba(245,158,11,0.06);"><div class="sol-check" style="background:var(--amber);">!</div><p>Si à 10h34 (20 min écoulées) aucun plat viande n'est détecté → circuit non validé ⚠️ — alerte générée et visible sur le tableau de bord immédiatement.</p></div>
+    </div>
+    <span class="page-num">8 / 12</span>
+  </div>
+
+  <!-- PAGE 9 : DASHBOARD -->
+  <div class="page">
+    <div class="section" style="padding-bottom:32px;">
+      <span class="section-tag st-green">Tableau de bord</span>
+      <h2>Ce que le client voit chaque jour</h2>
+      <p>Un tableau de bord web accessible depuis n'importe quel appareil connecté au réseau local du restaurant (PC, smartphone, tablette). Statistiques en temps réel et rapport complet généré automatiquement en fin de journée.</p>
+    </div>
+    <div style="padding:0 40px 20px;">
+      <div class="mock">
+        <div class="mock-bar-top">
+          <div class="dot" style="background:#FF5F57"></div>
+          <div class="dot" style="background:#FEBC2E"></div>
+          <div class="dot" style="background:#28C840"></div>
+          <span class="mock-label">CaféDetect — Tableau de bord — 16/04/2026 — 18:30</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-stats">
+            <div class="msc"><div class="msc-v">47</div><div class="msc-l">Produits servis</div></div>
+            <div class="msc"><div class="msc-v amber">3</div><div class="msc-l">Alertes circuit</div></div>
+            <div class="msc"><div class="msc-v">12</div><div class="msc-l">Sorties stock</div></div>
+            <div class="msc"><div class="msc-v good">94%</div><div class="msc-l">Circuits validés</div></div>
+          </div>
+          <div style="font-size:10px;color:rgba(255,255,255,0.3);margin-bottom:8px;font-weight:600;letter-spacing:0.5px;">PRODUITS SERVIS AUJOURD'HUI</div>
+          <div class="mock-tbl">
+            <div class="mtr"><span class="mtr-n">☕ Café Express</span><div class="mtr-bar"><div class="mtr-fill" style="width:90%"></div></div><span class="mtr-count">18</span><span class="mbadge badge-ok">✓ OK</span></div>
+            <div class="mtr"><span class="mtr-n">🥛 Cappuccino</span><div class="mtr-bar"><div class="mtr-fill" style="width:60%"></div></div><span class="mtr-count">12</span><span class="mbadge badge-ok">✓ OK</span></div>
+            <div class="mtr"><span class="mtr-n">🥩 Plat Viande</span><div class="mtr-bar"><div class="mtr-fill amber" style="width:40%"></div></div><span class="mtr-count">8</span><span class="mbadge badge-warn">⚠ 2 alertes</span></div>
+            <div class="mtr"><span class="mtr-n">🧃 Jus Pressé</span><div class="mtr-bar"><div class="mtr-fill" style="width:30%"></div></div><span class="mtr-count">6</span><span class="mbadge badge-ok">✓ OK</span></div>
+            <div class="mtr"><span class="mtr-n">🥪 Sandwich</span><div class="mtr-bar"><div class="mtr-fill red" style="width:15%"></div></div><span class="mtr-count">3</span><span class="mbadge badge-err">🚨 1 alerte</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="padding:0 40px 40px;">
+      <div class="grid-3">
+        <div class="card card-green"><span class="icon">📊</span><h4>Rapport journalier automatique</h4><p>Généré à la fermeture. Téléchargeable en PDF ou Excel avec le détail de chaque produit et chaque alerte.</p></div>
+        <div class="card card-amber"><span class="icon">⚠️</span><h4>Alertes en temps réel</h4><p>Notification instantanée sur le tableau de bord dès qu'un circuit est non validé dans le délai défini.</p></div>
+        <div class="card"><span class="icon">📈</span><h4>Historique & tendances</h4><p>Comparaison jour par jour et semaine par semaine. Identification des produits à risque sur la durée.</p></div>
+      </div>
+    </div>
+    <span class="page-num">9 / 12</span>
+  </div>
+
+  <!-- PAGE 10 : BUDGET -->
+  <div class="page">
+    <div class="section">
+      <span class="section-tag st-green">Budget & Matériel</span>
+      <h2>Récapitulatif complet</h2>
+      <p>Tout le matériel nécessaire est disponible en ligne ou en magasin d'électronique. Le développement logiciel, l'entraînement du modèle IA et le tableau de bord sont réalisés sur mesure et inclus dans la prestation de service.</p>
+
+      <table class="budget-table">
+        <thead>
+          <tr><th>Composant</th><th>Détail</th><th>Prix estimé</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>📷 Caméra Comptoir</strong></td><td>Logitech C920 HD Pro — USB 1080p 30fps</td><td class="price">~60 €</td></tr>
+          <tr><td><strong>📷 Caméra Stock</strong></td><td>TP-Link Tapo C310 — WiFi 1080p Vision IR nocturne</td><td class="price">~35 €</td></tr>
+          <tr><td><strong>💻 PC Central</strong></td><td>PC existant du restaurant (si compatible) — sinon Mini PC Intel NUC</td><td class="price">0 € ou ~200 €</td></tr>
+          <tr><td><strong>🔌 Accessoires</strong></td><td>Support caméra vissable, rallonge USB 3m, gaine câble, multiprise</td><td class="price">~20 €</td></tr>
+          <tr><td><strong>🧠 Développement logiciel</strong></td><td>Modèle IA sur mesure, moteur de circuit, tableau de bord, alertes, rapports PDF</td><td class="price">Sur devis</td></tr>
+          <tr><td colspan="2"><strong>Total matériel seul (hors développement)</strong></td><td class="price">~115 €</td></tr>
+        </tbody>
+      </table>
+
+      <div class="divider"></div>
+
+      <h3 style="font-size:15px;font-weight:700;color:var(--navy);margin-bottom:14px;">Ce qui est inclus dans la prestation logiciel</h3>
+      <div class="grid-2">
+        <div>
+          <div class="sol-point"><div class="sol-check">✓</div><p>Installation et configuration des deux caméras sur site</p></div>
+          <div class="sol-point"><div class="sol-check">✓</div><p>Entraînement du modèle IA sur les produits spécifiques du client</p></div>
+          <div class="sol-point"><div class="sol-check">✓</div><p>Développement du moteur de circuit et du système d'alertes</p></div>
+        </div>
+        <div>
+          <div class="sol-point"><div class="sol-check">✓</div><p>Tableau de bord web personnalisé avec rapports PDF automatiques</p></div>
+          <div class="sol-point"><div class="sol-check">✓</div><p>Formation du client à la lecture du tableau de bord</p></div>
+          <div class="sol-point"><div class="sol-check">✓</div><p>Support technique et mises à jour pendant 3 mois après lancement</p></div>
+        </div>
+      </div>
+    </div>
+    <span class="page-num">10 / 12</span>
+  </div>
+
+  <!-- PAGE 11 : ÉTAPES DE DÉPLOIEMENT -->
+  <div class="page">
+    <div class="dark-section">
+      <span class="section-tag st-navy">Mise en place</span>
+      <h2>Étapes de déploiement</h2>
+      <p>Du premier contact à la mise en service complète, voici le déroulement détaillé du projet :</p>
+
+      <div class="steps" style="margin-top:24px;">
+        <div class="step">
+          <div class="step-num light">1</div>
+          <div class="step-content">
+            <h4 class="white">Visite technique (Jour 1)</h4>
+            <p class="white">Inspection des lieux : comptoir, stock, réseau WiFi, PC disponible. Définition des emplacements exacts des caméras. Inventaire complet des produits à détecter (menu + matières premières du stock).</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num light">2</div>
+          <div class="step-content">
+            <h4 class="white">Collecte des données photos (Jours 2-3)</h4>
+            <p class="white">Prise de photos de tous les produits du menu et matières premières du stock — sous plusieurs angles, distances et conditions lumineuses. Minimum 30 à 50 photos par produit. Réalisé sur place avec le client.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num light">3</div>
+          <div class="step-content">
+            <h4 class="white">Entraînement IA & développement (Semaines 1-2)</h4>
+            <p class="white">Labellisation des photos, entraînement du modèle YOLOv8, développement du moteur de circuit, du tableau de bord web, du système d'alertes et des rapports automatiques. Phase réalisée à distance.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num light">4</div>
+          <div class="step-content">
+            <h4 class="white">Installation & tests sur site (Jour J)</h4>
+            <p class="white">Installation physique des caméras, configuration du réseau, déploiement du logiciel sur le PC central. Tests complets en conditions réelles avec les produits du restaurant. Ajustements si nécessaire.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num light">5</div>
+          <div class="step-content">
+            <h4 class="white">Formation & mise en service officielle</h4>
+            <p class="white">Formation du responsable à la lecture du tableau de bord, à la compréhension des alertes et à la génération des rapports PDF. Réglages fins selon les retours du client. Mise en service officielle et autonome.</p>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num light">6</div>
+          <div class="step-content">
+            <h4 class="white">Suivi post-lancement (3 mois inclus)</h4>
+            <p class="white">Surveillance des performances du modèle, correction des erreurs de détection si nécessaire, ajout de nouveaux produits au menu sur demande, mises à jour du tableau de bord selon les besoins du client.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="page-num light">11 / 12</span>
+  </div>
+
+  <!-- PAGE 12 : CONTACT -->
+  <div class="page">
+    <div style="background:linear-gradient(135deg,var(--green) 0%,var(--green-mid) 60%,#1B4030 100%);padding:80px 60px;text-align:center;color:white;min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+      <div style="position:absolute;top:-40%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(255,255,255,0.08) 0%,transparent 70%);pointer-events:none;"></div>
+      <div style="position:relative;z-index:1;">
+        <div style="font-size:50px;margin-bottom:20px;">📷</div>
+        <h2 style="font-size:34px;font-weight:800;color:white;margin-bottom:16px;">Prêt à démarrer ?</h2>
+        <p style="font-size:17px;color:rgba(255,255,255,0.7);margin-bottom:36px;max-width:500px;line-height:1.75;">Contactez-nous pour organiser une visite technique gratuite et recevoir un devis personnalisé selon la configuration de votre établissement.</p>
+        <div style="background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:14px;padding:22px 36px;display:inline-block;">
+          <p style="font-size:13px;color:rgba(255,255,255,0.6);margin-bottom:10px;">Contactez-nous pour démarrer</p>
+          <a href="mailto:schatwiti@sanadidari.com" style="font-size:18px;font-weight:700;color:white;text-decoration:none;display:block;">✉️ schatwiti@sanadidari.com</a>
+          <a href="mailto:schatwiti@gmail.com" style="font-size:13px;color:rgba(255,255,255,0.5);text-decoration:none;display:block;margin-top:8px;">schatwiti@gmail.com</a>
+        </div>
+      </div>
+    </div>
+    <span class="page-num light">12 / 12</span>
+  </div>
+
+</div>
+</body>
+</html>

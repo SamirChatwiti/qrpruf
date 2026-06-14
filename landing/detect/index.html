@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>CaféDetect — Détection en temps réel</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs@4.17.0/dist/tf.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow-models/coco-ssd@2.2.3/dist/coco-ssd.min.js"></script>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box;}
+    html,body{width:100%;height:100%;overflow:hidden;background:#0D1F3C;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;}
+
+    /* VIDEO + CANVAS */
+    #wrap{position:relative;width:100vw;height:100vh;}
+    #video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;transform:scaleX(1);}
+    #canvas{position:absolute;inset:0;width:100%;height:100%;}
+
+    /* TOP BAR */
+    .topbar{position:absolute;top:0;left:0;right:0;z-index:20;padding:env(safe-area-inset-top,14px) 18px 14px;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(to bottom,rgba(13,31,60,0.92) 0%,transparent 100%);}
+    .logo{font-weight:800;font-size:17px;color:white;display:flex;align-items:center;gap:8px;}
+    .logo-dot{width:10px;height:10px;border-radius:50%;background:#52B788;animation:blink 1.2s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:0.25}}
+    .status-badge{font-size:11px;font-weight:700;padding:4px 12px;border-radius:20px;background:rgba(82,183,136,0.18);border:1px solid rgba(82,183,136,0.35);color:#52B788;}
+    .status-badge.loading{color:#F59E0B;background:rgba(245,158,11,0.15);border-color:rgba(245,158,11,0.3);}
+    .status-badge.stopped{color:#94A3B8;background:rgba(148,163,184,0.12);border-color:rgba(148,163,184,0.2);}
+
+    /* STATS ROW */
+    .statsrow{position:absolute;top:64px;left:0;right:0;z-index:20;padding:0 18px;display:flex;gap:8px;flex-wrap:wrap;}
+    .spill{background:rgba(13,31,60,0.72);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.1);border-radius:20px;padding:5px 14px;font-size:12px;font-weight:600;color:rgba(255,255,255,0.7);}
+    .spill b{color:#52B788;}
+
+    /* BOTTOM PANEL */
+    .bottom{position:absolute;bottom:0;left:0;right:0;z-index:20;padding:16px 18px calc(env(safe-area-inset-bottom,0px) + 80px);background:linear-gradient(to top,rgba(13,31,60,0.98) 70%,transparent 100%);}
+    .det-scroll{display:flex;gap:7px;flex-wrap:wrap;min-height:28px;margin-bottom:14px;}
+    .det-chip{display:inline-flex;align-items:center;gap:5px;background:rgba(82,183,136,0.15);border:1px solid rgba(82,183,136,0.35);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;color:#52B788;white-space:nowrap;}
+    .det-chip.new{animation:popIn 0.25s ease;}
+    @keyframes popIn{0%{transform:scale(0.7);opacity:0}100%{transform:scale(1);opacity:1}}
+    .det-pct{font-weight:400;color:rgba(82,183,136,0.7);font-size:11px;}
+    .btnrow{display:flex;gap:10px;}
+    .btn{flex:1;border:none;border-radius:14px;padding:14px 10px;font-size:14px;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.2s;display:flex;align-items:center;justify-content:center;gap:6px;}
+    .btn-flip{background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.18);}
+    .btn-flip:active{background:rgba(255,255,255,0.2);}
+    .btn-go{background:#52B788;color:white;}
+    .btn-go:active{background:#40916C;}
+    .btn-go.stopping{background:#DC2626;}
+    .btn-go.stopping:active{background:#B91C1C;}
+
+    /* LOADING SCREEN */
+    #loading{position:absolute;inset:0;z-index:50;background:#0D1F3C;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;transition:opacity 0.5s;}
+    .load-emoji{font-size:52px;margin-bottom:22px;animation:float 2s ease-in-out infinite;}
+    @keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+    #loading h2{font-size:22px;font-weight:800;color:white;margin-bottom:10px;}
+    #loading p{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;max-width:280px;}
+    .pbar{width:220px;height:4px;background:rgba(255,255,255,0.08);border-radius:2px;margin:22px auto 0;overflow:hidden;}
+    .pfill{height:100%;background:linear-gradient(90deg,#52B788,#40916C);border-radius:2px;width:0%;transition:width 0.4s ease;}
+
+    /* ERROR */
+    #errscreen{position:absolute;inset:0;z-index:50;background:#0D1F3C;display:none;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:40px;}
+    #errscreen h2{font-size:20px;font-weight:800;color:white;margin-bottom:12px;}
+    #errscreen p{font-size:14px;color:rgba(255,255,255,0.5);line-height:1.75;max-width:280px;}
+    .btn-retry{margin-top:24px;background:#52B788;color:white;border:none;border-radius:12px;padding:12px 28px;font-size:14px;font-weight:700;cursor:pointer;}
+  </style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div id="loading">
+  <div class="load-emoji">📷</div>
+  <h2>Chargement du modèle IA</h2>
+  <p>Téléchargement en cours...<br>Cela prend 10 à 20 secondes<br>selon votre connexion.</p>
+  <div class="pbar"><div class="pfill" id="pfill"></div></div>
+</div>
+
+<!-- ERROR -->
+<div id="errscreen">
+  <div style="font-size:48px;margin-bottom:20px;">🔒</div>
+  <h2>Accès caméra refusé</h2>
+  <p>Autorisez l'accès à la caméra dans les paramètres de votre navigateur, puis réessayez.</p>
+  <button class="btn-retry" onclick="location.reload()">🔄 Réessayer</button>
+</div>
+
+<!-- MAIN -->
+<div id="wrap">
+  <video id="video" playsinline autoplay muted></video>
+  <canvas id="canvas"></canvas>
+
+  <!-- TOP BAR -->
+  <div class="topbar">
+    <div class="logo">
+      <div class="logo-dot" id="liveDot" style="background:#F59E0B;animation:none;"></div>
+      Détection IA
+    </div>
+    <div class="status-badge loading" id="statusBadge">Chargement...</div>
+  </div>
+
+  <!-- STATS -->
+  <div class="statsrow">
+    <div class="spill">Objets détectés : <b id="countNow">0</b></div>
+    <div class="spill">Total session : <b id="countTotal">0</b></div>
+    <div class="spill" id="fpsBox">FPS : <b>—</b></div>
+  </div>
+
+  <!-- BOTTOM -->
+  <div class="bottom">
+    <div class="det-scroll" id="detList">
+      <span style="font-size:12px;color:rgba(255,255,255,0.3);align-self:center;">En attente de détection...</span>
+    </div>
+    <div class="btnrow">
+      <button class="btn btn-flip" id="btnFlip" onclick="flipCamera()">🔄 Caméra</button>
+      <button class="btn btn-go" id="btnGo" onclick="toggleDetection()">▶ Démarrer</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const COLORS = [
+  '#52B788','#4CC0C0','#F59E0B','#818CF8','#F472B6',
+  '#34D399','#60A5FA','#FB923C','#A78BFA','#4ADE80'
+];
+function colorFor(label){
+  let h=0;for(let i=0;i<label.length;i++)h=(h*31+label.charCodeAt(i))&0xFFFFFFFF;
+  return COLORS[Math.abs(h)%COLORS.length];
+}
+
+// French translations for COCO labels
+const FR={
+  person:'Personne',bicycle:'Vélo',car:'Voiture',motorcycle:'Moto',
+  airplane:'Avion',bus:'Bus',train:'Train',truck:'Camion',boat:'Bateau',
+  'traffic light':'Feu rouge',bench:'Banc',bird:'Oiseau',cat:'Chat',
+  dog:'Chien',horse:'Cheval',cow:'Vache',elephant:'Éléphant',
+  bear:'Ours',zebra:'Zèbre',giraffe:'Girafe',backpack:'Sac à dos',
+  umbrella:'Parapluie',handbag:'Sac à main',tie:'Cravate',suitcase:'Valise',
+  bottle:'Bouteille',cup:'Tasse / Verre',fork:'Fourchette',knife:'Couteau',
+  spoon:'Cuillère',bowl:'Bol',banana:'Banane',apple:'Pomme',
+  sandwich:'Sandwich',orange:'Orange',broccoli:'Brocoli',carrot:'Carotte',
+  'hot dog':'Hot dog',pizza:'Pizza',donut:'Beignet',cake:'Gâteau',
+  chair:'Chaise',couch:'Canapé',bed:'Lit',
+  'dining table':'Table',toilet:'Toilettes',tv:'Télévision',
+  laptop:'Ordinateur portable',mouse:'Souris',remote:'Télécommande',
+  keyboard:'Clavier',phone:'Téléphone','cell phone':'Téléphone',
+  microwave:'Micro-ondes',oven:'Four',toaster:'Grille-pain',
+  sink:'Évier',refrigerator:'Réfrigérateur',book:'Livre',
+  clock:'Horloge',vase:'Vase',scissors:'Ciseaux',
+  'teddy bear':'Peluche',toothbrush:'Brosse à dents',
+  'wine glass':'Verre à vin','potted plant':'Plante en pot',
+};
+function fr(label){return FR[label]||label;}
+
+let model=null, running=false, facingUser=false;
+let stream=null, animId=null;
+let countTotal=0;
+let lastTime=0, fps=0;
+const seenLabels=new Set();
+
+const video=document.getElementById('video');
+const canvas=document.getElementById('canvas');
+const ctx=canvas.getContext('2d');
+const loading=document.getElementById('loading');
+const errscreen=document.getElementById('errscreen');
+const statusBadge=document.getElementById('statusBadge');
+const liveDot=document.getElementById('liveDot');
+const countNowEl=document.getElementById('countNow');
+const countTotalEl=document.getElementById('countTotal');
+const fpsBox=document.getElementById('fpsBox');
+const detList=document.getElementById('detList');
+const pfill=document.getElementById('pfill');
+const btnGo=document.getElementById('btnGo');
+
+// Fake progress bar during model load
+let prog=0;
+const progInt=setInterval(()=>{
+  prog=Math.min(prog+(Math.random()*8),90);
+  pfill.style.width=prog+'%';
+},400);
+
+// Load model
+cocoSsd.load().then(m=>{
+  model=m;
+  clearInterval(progInt);
+  pfill.style.width='100%';
+  setTimeout(()=>{
+    loading.style.opacity='0';
+    setTimeout(()=>loading.style.display='none',500);
+    startCamera();
+  },500);
+}).catch(e=>{
+  loading.style.display='none';
+  errscreen.style.display='flex';
+});
+
+async function startCamera(){
+  try{
+    if(stream){stream.getTracks().forEach(t=>t.stop());}
+    stream=await navigator.mediaDevices.getUserMedia({
+      video:{facingMode: facingUser?'user':'environment', width:{ideal:1280}, height:{ideal:720}},
+      audio:false
+    });
+    video.srcObject=stream;
+    await video.play();
+    statusBadge.textContent='Prêt';
+    statusBadge.className='status-badge stopped';
+    liveDot.style.background='#52B788';
+  }catch(e){
+    loading.style.display='none';
+    errscreen.style.display='flex';
+  }
+}
+
+function toggleDetection(){
+  if(running){
+    stopDetection();
+  }else{
+    startDetection();
+  }
+}
+
+function startDetection(){
+  running=true;
+  btnGo.textContent='⏹ Arrêter';
+  btnGo.className='btn btn-go stopping';
+  statusBadge.textContent='● Actif';
+  statusBadge.className='status-badge';
+  liveDot.style.animation='blink 1.2s infinite';
+  detect();
+}
+
+function stopDetection(){
+  running=false;
+  if(animId)cancelAnimationFrame(animId);
+  btnGo.textContent='▶ Démarrer';
+  btnGo.className='btn btn-go';
+  statusBadge.textContent='Arrêté';
+  statusBadge.className='status-badge stopped';
+  liveDot.style.animation='none';
+  liveDot.style.background='#94A3B8';
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  countNowEl.textContent='0';
+}
+
+async function detect(){
+  if(!running)return;
+
+  // Sync canvas size
+  if(canvas.width!==video.videoWidth||canvas.height!==video.videoHeight){
+    canvas.width=video.videoWidth||640;
+    canvas.height=video.videoHeight||480;
+  }
+
+  const now=performance.now();
+  const delta=now-lastTime;
+  if(lastTime>0) fps=Math.round(1000/delta);
+  lastTime=now;
+  fpsBox.innerHTML=`FPS : <b>${fps}</b>`;
+
+  const predictions=await model.detect(video);
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  let newCount=0;
+  const currentLabels=[];
+
+  predictions.forEach(p=>{
+    if(p.score<0.45)return;
+    newCount++;
+    const label=fr(p.class);
+    const pct=Math.round(p.score*100);
+    currentLabels.push({label,pct,raw:p.class});
+
+    const [x,y,w,h]=p.bbox;
+    const col=colorFor(p.class);
+
+    // Box
+    ctx.strokeStyle=col;
+    ctx.lineWidth=2.5;
+    ctx.strokeRect(x,y,w,h);
+
+    // Fill top bar
+    ctx.fillStyle=col;
+    const txtH=22;
+    ctx.fillRect(x,y-txtH,Math.min(w,180),txtH);
+
+    // Label text
+    ctx.fillStyle='white';
+    ctx.font=`bold 13px -apple-system,sans-serif`;
+    ctx.fillText(`${label} ${pct}%`,x+6,y-6);
+
+    // Corner dots
+    ctx.fillStyle=col;
+    [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy])=>{
+      ctx.beginPath();ctx.arc(cx,cy,4,0,Math.PI*2);ctx.fill();
+    });
+  });
+
+  countNowEl.textContent=newCount;
+
+  // Update chips
+  if(currentLabels.length>0){
+    const fresh=currentLabels.filter(l=>!seenLabels.has(l.raw));
+    fresh.forEach(l=>seenLabels.add(l.raw));
+    if(fresh.length>0) countTotal+=fresh.length;
+    countTotalEl.textContent=countTotal;
+
+    detList.innerHTML=currentLabels.map(l=>
+      `<span class="det-chip"><span>&#x1F4E6; ${l.label}</span><span class="det-pct">${l.pct}%</span></span>`
+    ).join('');
+  }else{
+    detList.innerHTML='<span style="font-size:12px;color:rgba(255,255,255,0.3);align-self:center;">Aucun objet détecté...</span>';
+    countNowEl.textContent='0';
+  }
+
+  animId=requestAnimationFrame(detect);
+}
+
+async function flipCamera(){
+  facingUser=!facingUser;
+  const wasRunning=running;
+  if(running)stopDetection();
+  await startCamera();
+  if(wasRunning)startDetection();
+}
+
+// Resize handler
+window.addEventListener('resize',()=>{
+  canvas.width=video.videoWidth||640;
+  canvas.height=video.videoHeight||480;
+});
+</script>
+</body>
+</html>

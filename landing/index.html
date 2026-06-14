@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QRpruf — Cryptographic Proof of Presence</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --teal: #4CC0C0; --teal-dark: #3AADAD; --teal-light: #E0F5F5;
+      --navy: #0D1F3C; --navy-soft: #1A3455;
+      --text: #1A1A2E; --muted: #6B7280;
+      --bg: #FFFFFF; --bg-alt: #F0FAFA; --border: #E5E7EB;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html { scroll-behavior:smooth; }
+    body { font-family:'Inter','Cairo',sans-serif; color:var(--text); background:var(--bg); overflow-x:hidden; }
+
+    /* RTL override */
+    [dir="rtl"] body { font-family:'Cairo','Inter',sans-serif; }
+    [dir="rtl"] .hero-inner { flex-direction:row-reverse; }
+    [dir="rtl"] .hero-text { text-align:right; }
+    [dir="rtl"] .hero-actions { justify-content:flex-end; }
+    [dir="rtl"] .steps::before { left:auto; right:calc(16.67% + 24px); }
+    [dir="rtl"] .counter-vs { transform:scaleX(-1); }
+    [dir="rtl"] .footer-logo { order:2; }
+    [dir="rtl"] footer p:last-child { order:0; }
+    [dir="rtl"] .nav-cta { font-family:'Cairo',sans-serif; }
+
+    /* ── NAV ── */
+    nav {
+      position:fixed; top:0; left:0; right:0; z-index:100;
+      background:rgba(255,255,255,0.92); backdrop-filter:blur(12px);
+      border-bottom:1px solid var(--border);
+      padding:14px 40px;
+      display:flex; align-items:center; justify-content:space-between; gap:20px;
+    }
+    .logo { display:flex; align-items:center; gap:10px; font-weight:800; font-size:20px; color:var(--navy); text-decoration:none; }
+
+    .lang-switcher { display:flex; gap:3px; background:var(--bg-alt); border-radius:9px; padding:3px; }
+    .lang-btn {
+      background:transparent; border:none; border-radius:6px;
+      padding:5px 12px; font-size:13px; font-weight:600; cursor:pointer;
+      color:var(--muted); transition:all 0.2s; font-family:'Inter',sans-serif;
+    }
+    .lang-btn.active { background:white; color:var(--navy); box-shadow:0 1px 4px rgba(0,0,0,0.1); }
+    .lang-btn:hover:not(.active) { color:var(--navy); }
+
+    .nav-cta {
+      background:var(--teal); color:white; border:none; border-radius:10px;
+      padding:10px 22px; font-size:14px; font-weight:600; cursor:pointer;
+      font-family:'Inter',sans-serif; transition:background 0.2s; white-space:nowrap;
+    }
+    .nav-cta:hover { background:var(--teal-dark); }
+
+    /* ── HERO ── */
+    .hero {
+      min-height:100vh;
+      background:linear-gradient(135deg, var(--navy) 0%, var(--navy-soft) 50%, #1B4060 100%);
+      display:flex; align-items:center;
+      padding:100px 40px 60px; position:relative; overflow:hidden;
+    }
+    .hero::before {
+      content:''; position:absolute; top:-40%; right:-10%;
+      width:700px; height:700px;
+      background:radial-gradient(circle, rgba(76,192,192,0.15) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .hero-inner {
+      max-width:1200px; margin:0 auto;
+      display:flex; align-items:center; gap:80px;
+      width:100%; position:relative; z-index:1;
+    }
+    .hero-text { flex:1; }
+    .hero-badge {
+      display:inline-flex; align-items:center; gap:8px;
+      background:rgba(76,192,192,0.15); border:1px solid rgba(76,192,192,0.3);
+      border-radius:30px; padding:6px 14px;
+      font-size:12px; color:var(--teal); font-weight:600; margin-bottom:24px; letter-spacing:0.5px;
+    }
+    .pulse-dot { width:7px; height:7px; background:var(--teal); border-radius:50%; animation:dot-pulse 1.5s infinite; }
+    @keyframes dot-pulse { 0%,100%{opacity:1} 50%{opacity:0.3} }
+    .hero h1 { font-size:clamp(36px,5vw,62px); font-weight:800; color:white; line-height:1.1; margin-bottom:20px; }
+    .hero h1 .accent { color:var(--teal); }
+    .hero-sub { font-size:18px; color:rgba(255,255,255,0.7); line-height:1.7; margin-bottom:40px; max-width:480px; }
+    .hero-actions { display:flex; gap:14px; align-items:center; flex-wrap:wrap; }
+    .btn-primary {
+      background:var(--teal); color:white; border:none; border-radius:12px;
+      padding:15px 28px; font-size:16px; font-weight:700; cursor:pointer;
+      font-family:'Inter','Cairo',sans-serif; transition:all 0.2s;
+    }
+    .btn-primary:hover { background:var(--teal-dark); transform:translateY(-1px); }
+    .btn-secondary {
+      background:transparent; color:rgba(255,255,255,0.8);
+      border:1.5px solid rgba(255,255,255,0.25); border-radius:12px;
+      padding:15px 28px; font-size:16px; font-weight:600; cursor:pointer;
+      font-family:'Inter','Cairo',sans-serif; transition:all 0.2s;
+    }
+    .btn-secondary:hover { border-color:rgba(255,255,255,0.6); color:white; }
+
+    /* ── PHONE ── */
+    .hero-visual { flex-shrink:0; position:relative; width:300px; }
+    .phone-wrap { position:relative; display:flex; justify-content:center; align-items:center; }
+    .phone-svg { filter:drop-shadow(0 30px 60px rgba(0,0,0,0.4)); }
+    .gps-pin { position:absolute; bottom:-20px; left:50%; transform:translateX(-50%); animation:pin-drop 1s cubic-bezier(0.34,1.56,0.64,1) 0.8s both; }
+    @keyframes pin-drop { from{transform:translateX(-50%) translateY(-40px);opacity:0} to{transform:translateX(-50%) translateY(0);opacity:1} }
+    .pulse-ring { position:absolute; bottom:-26px; left:50%; transform:translateX(-50%); width:12px; height:12px; }
+    .pulse-ring::before,.pulse-ring::after { content:''; position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); border-radius:50%; border:2px solid var(--teal); animation:ring-pulse 2s ease-out 1.5s infinite; }
+    .pulse-ring::after { animation-delay:2.5s; }
+    @keyframes ring-pulse { 0%{width:10px;height:10px;opacity:0.8} 100%{width:70px;height:70px;opacity:0} }
+    .qr-cell { animation:qr-appear 0.3s ease both; }
+    @keyframes qr-appear { from{opacity:0;transform:scale(0)} to{opacity:1;transform:scale(1)} }
+
+    /* ── PROBLEM ── */
+    .problem { padding:80px 40px; background:var(--bg-alt); }
+    .problem-inner { max-width:900px; margin:0 auto; text-align:center; }
+    .section-tag {
+      display:inline-block; background:var(--teal-light); color:var(--teal-dark);
+      border-radius:20px; padding:5px 14px; font-size:12px; font-weight:700;
+      letter-spacing:0.8px; text-transform:uppercase; margin-bottom:20px;
+    }
+    .problem h2 { font-size:clamp(28px,4vw,46px); font-weight:800; color:var(--navy); line-height:1.2; margin-bottom:16px; }
+    .problem-p { font-size:17px; color:var(--muted); max-width:600px; margin:0 auto 50px; line-height:1.7; }
+    .counter-row { display:flex; justify-content:center; gap:60px; flex-wrap:wrap; align-items:center; }
+    .counter-item { text-align:center; }
+    .counter-num { font-size:64px; font-weight:800; color:var(--teal); line-height:1; display:block; }
+    .counter-label { font-size:14px; color:var(--muted); margin-top:8px; max-width:140px; line-height:1.5; }
+    .counter-vs { font-size:32px; color:var(--border); font-weight:300; }
+
+    /* ── HOW ── */
+    .how { padding:100px 40px; background:var(--bg); }
+    .section-header { text-align:center; margin-bottom:70px; }
+    .section-header h2 { font-size:clamp(28px,4vw,44px); font-weight:800; color:var(--navy); margin-bottom:14px; }
+    .section-header p { font-size:17px; color:var(--muted); max-width:500px; margin:0 auto; }
+    .steps { max-width:1100px; margin:0 auto; display:flex; gap:0; position:relative; }
+    .steps::before {
+      content:''; position:absolute; top:52px; left:calc(16.67% + 24px); right:calc(16.67% + 24px);
+      height:2px; background:linear-gradient(90deg, var(--teal), var(--teal-light)); z-index:0;
+    }
+    .step-card { flex:1; text-align:center; padding:0 20px; position:relative; z-index:1; }
+    .step-icon-wrap {
+      width:104px; height:104px; background:white;
+      border:3px solid var(--teal-light); border-radius:50%;
+      display:flex; align-items:center; justify-content:center;
+      margin:0 auto 24px; position:relative; box-shadow:0 8px 30px rgba(76,192,192,0.15);
+    }
+    .step-card:nth-child(2) .step-icon-wrap { background:var(--teal); border-color:var(--teal); box-shadow:0 8px 30px rgba(76,192,192,0.35); }
+    .step-num {
+      position:absolute; top:-6px; right:-6px; width:26px; height:26px;
+      background:var(--navy); color:white; border-radius:50%; font-size:12px; font-weight:700;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .step-card:nth-child(2) .step-num { background:var(--teal-dark); }
+    .step-card h3 { font-size:18px; font-weight:700; color:var(--navy); margin-bottom:10px; }
+    .step-card p { font-size:14px; color:var(--muted); line-height:1.6; }
+    @keyframes cursor-click { 0%,100%{transform:scale(1)} 50%{transform:scale(0.85)} }
+    @keyframes shutter { 0%,100%{transform:scale(1);opacity:1} 30%{transform:scale(0.9);opacity:0.7} 60%{transform:scale(1.05);opacity:1} }
+
+    /* ── FEATURES ── */
+    .features { padding:100px 40px; background:var(--navy); position:relative; overflow:hidden; }
+    .features::before {
+      content:''; position:absolute; top:-30%; right:-10%;
+      width:600px; height:600px;
+      background:radial-gradient(circle, rgba(76,192,192,0.12) 0%, transparent 70%);
+      pointer-events:none;
+    }
+    .features .section-header h2 { color:white; }
+    .features .section-header p { color:rgba(255,255,255,0.6); }
+    .features-grid { max-width:1100px; margin:0 auto; display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:24px; }
+    .feature-card {
+      background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);
+      border-radius:20px; padding:32px 28px; transition:all 0.3s;
+    }
+    .feature-card:hover { background:rgba(76,192,192,0.1); border-color:rgba(76,192,192,0.3); transform:translateY(-4px); }
+    .feature-icon-wrap { width:60px; height:60px; background:rgba(76,192,192,0.15); border-radius:16px; display:flex; align-items:center; justify-content:center; margin-bottom:20px; }
+    .feature-card h3 { font-size:17px; font-weight:700; color:white; margin-bottom:10px; }
+    .feature-card p { font-size:14px; color:rgba(255,255,255,0.55); line-height:1.7; }
+    .icon-shield { animation:shield-glow 2.5s ease-in-out infinite; }
+    @keyframes shield-glow { 0%,100%{filter:drop-shadow(0 0 0px var(--teal))} 50%{filter:drop-shadow(0 0 8px var(--teal))} }
+    .icon-pin { animation:pin-bounce 2s ease-in-out infinite; }
+    @keyframes pin-bounce { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+    .icon-wifi { animation:wifi-flash 3s ease-in-out infinite; }
+    @keyframes wifi-flash { 0%,40%,100%{opacity:1} 50%{opacity:0.3} }
+
+    /* ── WHO ── */
+    .who { padding:100px 40px; background:var(--bg-alt); }
+    .who-grid { max-width:900px; margin:0 auto; display:flex; flex-wrap:wrap; gap:14px; justify-content:center; }
+    .who-chip {
+      display:flex; align-items:center; gap:10px;
+      background:white; border:1.5px solid var(--border); border-radius:14px;
+      padding:14px 20px; font-size:15px; font-weight:600; color:var(--navy);
+      transition:all 0.2s; cursor:default;
+    }
+    .who-chip:hover { border-color:var(--teal); background:var(--teal-light); color:var(--teal-dark); transform:translateY(-2px); }
+    .who-chip-icon { font-size:22px; }
+
+    /* ── CTA ── */
+    .cta {
+      padding:100px 40px;
+      background:linear-gradient(135deg, var(--teal) 0%, var(--teal-dark) 100%);
+      text-align:center; position:relative; overflow:hidden;
+    }
+    .cta::before {
+      content:''; position:absolute; top:-50%; left:50%; transform:translateX(-50%);
+      width:800px; height:800px;
+      background:radial-gradient(circle, rgba(255,255,255,0.12) 0%, transparent 70%);
+    }
+    .cta-inner { position:relative; z-index:1; max-width:600px; margin:0 auto; }
+    .cta h2 { font-size:clamp(28px,4vw,46px); font-weight:800; color:white; margin-bottom:16px; }
+    .cta-p { font-size:17px; color:rgba(255,255,255,0.8); margin-bottom:40px; line-height:1.6; }
+    .cta-form { display:flex; gap:12px; max-width:480px; margin:0 auto; }
+    .cta-input {
+      flex:1; padding:15px 20px;
+      background:rgba(255,255,255,0.15); border:1.5px solid rgba(255,255,255,0.3);
+      border-radius:12px; color:white; font-size:15px; font-family:'Inter','Cairo',sans-serif; outline:none;
+    }
+    .cta-input::placeholder { color:rgba(255,255,255,0.6); }
+    .cta-input:focus { border-color:white; background:rgba(255,255,255,0.2); }
+    .cta-submit {
+      background:white; color:var(--teal-dark); border:none; border-radius:12px;
+      padding:15px 24px; font-size:15px; font-weight:700; cursor:pointer;
+      font-family:'Inter','Cairo',sans-serif; transition:all 0.2s; white-space:nowrap;
+    }
+    .cta-submit:hover { transform:translateY(-1px); box-shadow:0 6px 20px rgba(0,0,0,0.15); }
+    .cta-note { font-size:12px; color:rgba(255,255,255,0.6); margin-top:14px; }
+
+    /* ── FOOTER ── */
+    footer { background:var(--navy); padding:30px 40px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:16px; }
+    .footer-logo { font-weight:800; font-size:18px; color:white; }
+    footer p { font-size:13px; color:rgba(255,255,255,0.4); }
+
+    /* ── WHO simplified ── */
+    .who-simple {
+      max-width:800px; margin:0 auto;
+      display:grid; grid-template-columns:1fr 1fr; gap:24px;
+    }
+    .who-card {
+      background:white; border:1.5px solid var(--border); border-radius:20px;
+      padding:32px 28px; text-align:center; transition:all 0.3s;
+    }
+    .who-card:hover { border-color:var(--teal); transform:translateY(-4px); box-shadow:0 12px 30px rgba(76,192,192,0.12); }
+    .who-card-icon { font-size:42px; margin-bottom:16px; display:block; }
+    .who-card h3 { font-size:20px; font-weight:800; color:var(--navy); margin-bottom:10px; }
+    .who-card p { font-size:14px; color:var(--muted); line-height:1.7; }
+    @media(max-width:600px){ .who-simple { grid-template-columns:1fr; } }
+
+    /* ── REVEAL ── */
+    .reveal { opacity:0; transform:translateY(30px); transition:opacity 0.7s ease,transform 0.7s ease; }
+    .reveal.visible { opacity:1; transform:none; }
+    .reveal-delay-1 { transition-delay:0.1s; }
+    .reveal-delay-2 { transition-delay:0.2s; }
+    .reveal-delay-3 { transition-delay:0.3s; }
+    .reveal-delay-4 { transition-delay:0.4s; }
+
+    /* ── RESPONSIVE ── */
+    @media(max-width:768px){
+      nav { padding:14px 20px; gap:10px; }
+      .hero { padding:100px 20px 60px; }
+      .hero-inner { flex-direction:column!important; gap:50px; text-align:center; }
+      .hero-actions { justify-content:center!important; }
+      .hero-visual { width:220px; }
+      .problem,.how,.features,.who,.cta { padding:70px 20px; }
+      .steps { flex-direction:column; gap:30px; }
+      .steps::before { display:none; }
+      .counter-row { gap:30px; }
+      .cta-form { flex-direction:column; }
+      footer { flex-direction:column; text-align:center; }
+      .lang-btn { padding:5px 8px; font-size:12px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─── NAV ─── -->
+<nav>
+  <div class="logo">
+    <img src="../assets/images/logomain.svg" alt="QRpruf logo" width="38" height="38" style="flex-shrink:0">
+    QRpruf
+  </div>
+
+  <div class="lang-switcher">
+    <button class="lang-btn active" onclick="setLang('en')">EN</button>
+    <button class="lang-btn" onclick="setLang('fr')">FR</button>
+    <button class="lang-btn" onclick="setLang('ar')">ع</button>
+  </div>
+
+  <button class="nav-cta" data-i18n="nav_cta" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Early Access →</button>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-text">
+      <div class="hero-badge"><div class="pulse-dot"></div><span data-i18n="hero_badge">Live field testing · Coming soon</span></div>
+      <h1><span data-i18n="hero_h1_1">Cryptographic proof</span><br><span class="accent" data-i18n="hero_h1_2">of presence.</span></h1>
+      <p class="hero-sub" data-i18n="hero_p">A signed, geolocated, timestamped QR badge — generated in 3 seconds from your phone. For any use, anywhere.</p>
+      <div class="hero-actions">
+        <button class="btn-primary" data-i18n="btn_primary" onclick="document.getElementById('waitlist').scrollIntoView({behavior:'smooth'})">Join the waitlist →</button>
+        <button class="btn-secondary" data-i18n="btn_secondary" onclick="document.getElementById('how').scrollIntoView({behavior:'smooth'})">How it works</button>
+      </div>
+    </div>
+
+    <div class="hero-visual">
+      <div class="phone-wrap">
+        <svg class="phone-svg" width="280" height="520" viewBox="0 0 280 520">
+          <rect x="20" y="10" width="240" height="500" rx="36" fill="#1A3455" stroke="rgba(76,192,192,0.4)" stroke-width="2"/>
+          <rect x="30" y="50" width="220" height="420" rx="12" fill="#0D1F3C"/>
+          <rect x="100" y="18" width="80" height="12" rx="6" fill="#0D2137"/>
+          <rect x="105" y="498" width="70" height="5" rx="3" fill="rgba(255,255,255,0.2)"/>
+          <rect x="30" y="50" width="220" height="56" rx="12" fill="#4CC0C0"/>
+          <rect x="42" y="65" width="32" height="32" rx="8" fill="rgba(255,255,255,0.2)"/>
+          <text x="84" y="86" font-family="Cairo,sans-serif" font-size="11" fill="white" font-weight="600">دليلك الرقمي الموثوق</text>
+          <rect x="40" y="120" width="200" height="50" rx="10" fill="rgba(34,197,94,0.15)" stroke="rgba(34,197,94,0.4)" stroke-width="1"/>
+          <circle cx="62" cy="145" r="12" fill="#22C55E"/>
+          <text x="57" y="150" font-family="sans-serif" font-size="12" fill="white" font-weight="bold">✓</text>
+          <text x="82" y="141" font-family="Cairo,sans-serif" font-size="9" fill="#86EFAC">تم إصدار التوثيق بنجاح!</text>
+          <text x="82" y="155" font-family="Cairo,sans-serif" font-size="8" fill="rgba(134,239,172,0.7)">يمكنك إغلاق التطبيق</text>
+          <rect x="70" y="185" width="140" height="28" rx="14" fill="rgba(255,255,255,0.08)"/>
+          <text x="175" y="204" font-family="monospace" font-size="10" fill="rgba(255,255,255,0.7)" text-anchor="middle">33.5897, -7.6116</text>
+          <text x="213" y="204" font-family="sans-serif" font-size="12" fill="#4CC0C0">📍</text>
+          <rect x="55" y="225" width="170" height="170" rx="14" fill="white"/>
+          <rect x="68" y="238" width="28" height="28" rx="3" fill="#0D1F3C"/>
+          <rect x="72" y="242" width="20" height="20" rx="2" fill="white"/>
+          <rect x="75" y="245" width="14" height="14" rx="1" fill="#0D1F3C"/>
+          <rect x="184" y="238" width="28" height="28" rx="3" fill="#0D1F3C"/>
+          <rect x="188" y="242" width="20" height="20" rx="2" fill="white"/>
+          <rect x="191" y="245" width="14" height="14" rx="1" fill="#0D1F3C"/>
+          <rect x="68" y="306" width="28" height="28" rx="3" fill="#0D1F3C"/>
+          <rect x="72" y="310" width="20" height="20" rx="2" fill="white"/>
+          <rect x="75" y="313" width="14" height="14" rx="1" fill="#0D1F3C"/>
+          <g fill="#0D1F3C">
+            <rect class="qr-cell" x="110" y="238" width="6" height="6" style="animation-delay:0.1s"/>
+            <rect class="qr-cell" x="120" y="238" width="6" height="6" style="animation-delay:0.15s"/>
+            <rect class="qr-cell" x="130" y="238" width="6" height="6" style="animation-delay:0.2s"/>
+            <rect class="qr-cell" x="145" y="238" width="6" height="6" style="animation-delay:0.25s"/>
+            <rect class="qr-cell" x="165" y="238" width="6" height="6" style="animation-delay:0.3s"/>
+            <rect class="qr-cell" x="110" y="248" width="6" height="6" style="animation-delay:0.35s"/>
+            <rect class="qr-cell" x="125" y="248" width="6" height="6" style="animation-delay:0.4s"/>
+            <rect class="qr-cell" x="140" y="248" width="6" height="6" style="animation-delay:0.45s"/>
+            <rect class="qr-cell" x="155" y="248" width="6" height="6" style="animation-delay:0.5s"/>
+            <rect class="qr-cell" x="168" y="248" width="6" height="6" style="animation-delay:0.55s"/>
+            <rect class="qr-cell" x="110" y="258" width="6" height="6" style="animation-delay:0.6s"/>
+            <rect class="qr-cell" x="120" y="258" width="6" height="6" style="animation-delay:0.65s"/>
+            <rect class="qr-cell" x="135" y="258" width="6" height="6" style="animation-delay:0.7s"/>
+            <rect class="qr-cell" x="150" y="258" width="6" height="6" style="animation-delay:0.75s"/>
+            <rect class="qr-cell" x="162" y="258" width="6" height="6" style="animation-delay:0.8s"/>
+            <rect class="qr-cell" x="68"  y="272" width="6" height="6" style="animation-delay:0.85s"/>
+            <rect class="qr-cell" x="78"  y="272" width="6" height="6" style="animation-delay:0.9s"/>
+            <rect class="qr-cell" x="92"  y="272" width="6" height="6" style="animation-delay:0.95s"/>
+            <rect class="qr-cell" x="110" y="272" width="6" height="6" style="animation-delay:1s"/>
+            <rect class="qr-cell" x="128" y="272" width="6" height="6" style="animation-delay:1.05s"/>
+            <rect class="qr-cell" x="145" y="272" width="6" height="6" style="animation-delay:1.1s"/>
+            <rect class="qr-cell" x="158" y="272" width="6" height="6" style="animation-delay:1.15s"/>
+            <rect class="qr-cell" x="172" y="272" width="6" height="6" style="animation-delay:1.2s"/>
+            <rect class="qr-cell" x="184" y="272" width="6" height="6" style="animation-delay:1.25s"/>
+            <rect class="qr-cell" x="68"  y="282" width="6" height="6" style="animation-delay:1.3s"/>
+            <rect class="qr-cell" x="85"  y="282" width="6" height="6" style="animation-delay:1.35s"/>
+            <rect class="qr-cell" x="100" y="282" width="6" height="6" style="animation-delay:1.4s"/>
+            <rect class="qr-cell" x="118" y="282" width="6" height="6" style="animation-delay:1.45s"/>
+            <rect class="qr-cell" x="134" y="282" width="6" height="6" style="animation-delay:1.5s"/>
+            <rect class="qr-cell" x="148" y="282" width="6" height="6" style="animation-delay:1.55s"/>
+            <rect class="qr-cell" x="164" y="282" width="6" height="6" style="animation-delay:1.6s"/>
+            <rect class="qr-cell" x="178" y="282" width="6" height="6" style="animation-delay:1.65s"/>
+            <rect class="qr-cell" x="200" y="282" width="6" height="6" style="animation-delay:1.7s"/>
+            <rect class="qr-cell" x="110" y="296" width="6" height="6" style="animation-delay:1.75s"/>
+            <rect class="qr-cell" x="125" y="296" width="6" height="6" style="animation-delay:1.8s"/>
+            <rect class="qr-cell" x="140" y="296" width="6" height="6" style="animation-delay:1.85s"/>
+            <rect class="qr-cell" x="155" y="296" width="6" height="6" style="animation-delay:1.9s"/>
+            <rect class="qr-cell" x="170" y="296" width="6" height="6" style="animation-delay:1.95s"/>
+            <rect class="qr-cell" x="184" y="296" width="6" height="6" style="animation-delay:2s"/>
+            <rect class="qr-cell" x="200" y="296" width="6" height="6" style="animation-delay:2.05s"/>
+            <rect class="qr-cell" x="110" y="310" width="6" height="6" style="animation-delay:2.1s"/>
+            <rect class="qr-cell" x="125" y="310" width="6" height="6" style="animation-delay:2.15s"/>
+            <rect class="qr-cell" x="145" y="310" width="6" height="6" style="animation-delay:2.2s"/>
+            <rect class="qr-cell" x="165" y="310" width="6" height="6" style="animation-delay:2.25s"/>
+            <rect class="qr-cell" x="180" y="310" width="6" height="6" style="animation-delay:2.3s"/>
+            <rect class="qr-cell" x="200" y="310" width="6" height="6" style="animation-delay:2.35s"/>
+            <rect class="qr-cell" x="110" y="324" width="6" height="6" style="animation-delay:2.4s"/>
+            <rect class="qr-cell" x="120" y="324" width="6" height="6" style="animation-delay:2.45s"/>
+            <rect class="qr-cell" x="132" y="324" width="6" height="6" style="animation-delay:2.5s"/>
+            <rect class="qr-cell" x="148" y="324" width="6" height="6" style="animation-delay:2.55s"/>
+            <rect class="qr-cell" x="165" y="324" width="6" height="6" style="animation-delay:2.6s"/>
+            <rect class="qr-cell" x="178" y="324" width="6" height="6" style="animation-delay:2.65s"/>
+            <rect class="qr-cell" x="194" y="324" width="6" height="6" style="animation-delay:2.7s"/>
+            <rect class="qr-cell" x="205" y="324" width="6" height="6" style="animation-delay:2.75s"/>
+          </g>
+          <text x="140" y="412" font-family="monospace" font-size="7" fill="rgba(255,255,255,0.3)" text-anchor="middle">qrpruf.com/p/proof.html?id=DEMO-2026</text>
+          <rect x="50" y="430" width="180" height="32" rx="10" fill="#4CC0C0"/>
+          <text x="140" y="451" font-family="Cairo,sans-serif" font-size="11" fill="white" font-weight="700" text-anchor="middle">العودة للرئيسية</text>
+        </svg>
+        <div class="gps-pin">
+          <svg width="32" height="40" viewBox="0 0 32 40">
+            <path d="M16 0C7.16 0 0 7.16 0 16C0 28 16 40 16 40C16 40 32 28 32 16C32 7.16 24.84 0 16 0Z" fill="#4CC0C0"/>
+            <circle cx="16" cy="16" r="7" fill="white"/>
+            <circle cx="16" cy="16" r="4" fill="#4CC0C0"/>
+          </svg>
+        </div>
+        <div class="pulse-ring"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── PROBLEM ─── -->
+<section class="problem">
+  <div class="problem-inner">
+    <div class="section-tag reveal" data-i18n="problem_tag">The Problem</div>
+    <h2 class="reveal" data-i18n="problem_h2">Presence is still proven with paper in 2026.</h2>
+    <p class="problem-p reveal" data-i18n="problem_p">Hours wasted, administrative errors, cancelled files. It was time for an alternative.</p>
+    <div class="counter-row">
+      <div class="counter-item reveal reveal-delay-1">
+        <span class="counter-num" data-target="3">0</span>
+        <div class="counter-label" data-i18n="counter1_label">pages of report to prove a simple presence</div>
+      </div>
+      <div class="counter-vs reveal reveal-delay-2">→</div>
+      <div class="counter-item reveal reveal-delay-3">
+        <span class="counter-num" data-target="3" data-suffix="s">0</span>
+        <div class="counter-label" data-i18n="counter2_label">seconds to generate a cryptographic QR badge</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─── HOW ─── -->
+<section class="how" id="how">
+  <div class="section-header">
+    <div class="section-tag reveal" data-i18n="how_tag">3 Steps</div>
+    <h2 class="reveal" data-i18n="how_h2">Simple. Fast. Tamper-proof.</h2>
+    <p class="reveal" data-i18n="how_p">From zero to cryptographic proof in under 10 seconds.</p>
+  </div>
+  <div class="steps">
+    <div class="step-card reveal reveal-delay-1">
+      <div class="step-icon-wrap">
+        <span class="step-num">1</span>
+        <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+          <circle cx="27" cy="27" r="22" stroke="#4CC0C0" stroke-width="2.5" fill="rgba(76,192,192,0.08)"/>
+          <rect x="16" y="20" width="8" height="10" rx="2" fill="#4CC0C0" style="animation:cursor-click 1.5s ease-in-out infinite"/>
+          <rect x="28" y="20" width="10" height="4" rx="2" fill="rgba(76,192,192,0.4)"/>
+          <rect x="28" y="27" width="8" height="4" rx="2" fill="rgba(76,192,192,0.4)"/>
+          <rect x="28" y="34" width="6" height="4" rx="2" fill="rgba(76,192,192,0.4)"/>
+        </svg>
+      </div>
+      <h3 data-i18n="step1_h">Choose the context</h3>
+      <p data-i18n="step1_p">Select your profile and purpose: presence, meeting, delivery, contract — dozens of use cases available.</p>
+    </div>
+    <div class="step-card reveal reveal-delay-2">
+      <div class="step-icon-wrap">
+        <span class="step-num">2</span>
+        <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+          <circle cx="27" cy="27" r="22" stroke="white" stroke-width="2.5" fill="rgba(255,255,255,0.15)"/>
+          <rect x="17" y="20" width="20" height="16" rx="3" stroke="white" stroke-width="2" style="animation:shutter 2s ease-in-out infinite"/>
+          <circle cx="27" cy="28" r="4" fill="white" style="animation:shutter 2s ease-in-out infinite"/>
+          <rect x="23" y="17" width="8" height="4" rx="2" fill="white"/>
+        </svg>
+      </div>
+      <h3 data-i18n="step2_h">Capture the moment</h3>
+      <p data-i18n="step2_p">Photo, video, audio or text — attach media that attests the situation. Works offline.</p>
+    </div>
+    <div class="step-card reveal reveal-delay-3">
+      <div class="step-icon-wrap">
+        <span class="step-num">3</span>
+        <svg width="54" height="54" viewBox="0 0 54 54" fill="none">
+          <circle cx="27" cy="27" r="22" stroke="#4CC0C0" stroke-width="2.5" fill="rgba(76,192,192,0.08)"/>
+          <rect x="16" y="17" width="9" height="9" rx="1.5" stroke="#4CC0C0" stroke-width="1.5" fill="none"/>
+          <rect x="29" y="17" width="9" height="9" rx="1.5" stroke="#4CC0C0" stroke-width="1.5" fill="none"/>
+          <rect x="16" y="29" width="9" height="9" rx="1.5" stroke="#4CC0C0" stroke-width="1.5" fill="none"/>
+          <rect x="18.5" y="19.5" width="4" height="4" fill="#4CC0C0"/>
+          <rect x="31.5" y="19.5" width="4" height="4" fill="#4CC0C0"/>
+          <rect x="18.5" y="31.5" width="4" height="4" fill="#4CC0C0"/>
+          <rect x="30" y="30" width="2" height="2" fill="#4CC0C0"/>
+          <rect x="33" y="30" width="2" height="2" fill="#4CC0C0"/>
+          <rect x="30" y="33" width="2" height="2" fill="#4CC0C0"/>
+          <rect x="33" y="33" width="2" height="2" fill="#4CC0C0"/>
+          <circle cx="38" cy="38" r="8" fill="#22C55E"/>
+          <polyline points="34,38 37,41 42,35" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        </svg>
+      </div>
+      <h3 data-i18n="step3_h">QR badge generated</h3>
+      <p data-i18n="step3_p">A unique cryptographic QR code, signed, geolocated and timestamped. Verifiable by anyone, anytime.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FEATURES ─── -->
+<section class="features">
+  <div class="section-header" style="margin-bottom:60px">
+    <div class="section-tag reveal" style="background:rgba(76,192,192,0.2);color:var(--teal)" data-i18n="feat_tag">Technology</div>
+    <h2 class="reveal" data-i18n="feat_h2">Built to be uncontestable.</h2>
+    <p class="reveal" data-i18n="feat_p">Every QRpruf badge embeds a cryptographic proof chain impossible to falsify.</p>
+  </div>
+  <div class="features-grid">
+    <div class="feature-card reveal reveal-delay-1">
+      <div class="feature-icon-wrap">
+        <svg class="icon-shield" width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2L3 6V12C3 17 7.5 21.5 12 22C16.5 21.5 21 17 21 12V6L12 2Z" stroke="#4CC0C0" stroke-width="2" fill="rgba(76,192,192,0.15)"/>
+          <polyline points="9,12 11,14 15,10" stroke="#4CC0C0" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <h3 data-i18n="feat1_h">Cryptographic Signature</h3>
+      <p data-i18n="feat1_p">Each badge is signed with a unique key. Any post-issue modification is immediately detectable.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-2">
+      <div class="feature-icon-wrap">
+        <svg class="icon-pin" width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M12 2C8.13 2 5 5.13 5 9C5 14.25 12 22 12 22C12 22 19 14.25 19 9C19 5.13 15.87 2 12 2Z" stroke="#4CC0C0" stroke-width="2" fill="rgba(76,192,192,0.15)"/>
+          <circle cx="12" cy="9" r="2.5" fill="#4CC0C0"/>
+        </svg>
+      </div>
+      <h3 data-i18n="feat2_h">Precise Geolocation</h3>
+      <p data-i18n="feat2_p">GPS coordinates embedded with 20-meter precision. The location is an integral part of the proof.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-3">
+      <div class="feature-icon-wrap">
+        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" class="icon-clock">
+          <circle cx="12" cy="12" r="9" stroke="#4CC0C0" stroke-width="2" fill="rgba(76,192,192,0.15)"/>
+          <line x1="12" y1="12" x2="12" y2="7" stroke="#4CC0C0" stroke-width="2" stroke-linecap="round" class="hand"/>
+          <line x1="12" y1="12" x2="15" y2="12" stroke="#4CC0C0" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="12" r="1.5" fill="#4CC0C0"/>
+        </svg>
+      </div>
+      <h3 data-i18n="feat3_h">Certified Timestamp</h3>
+      <p data-i18n="feat3_p">The exact date and time are sealed in the badge. Impossible to claim a different moment.</p>
+    </div>
+    <div class="feature-card reveal reveal-delay-4">
+      <div class="feature-icon-wrap">
+        <svg class="icon-wifi" width="30" height="30" viewBox="0 0 24 24" fill="none">
+          <path d="M5 12.55C7.84 9.77 11.26 8.5 12 8.5C12.74 8.5 16.16 9.77 19 12.55" stroke="#4CC0C0" stroke-width="2" stroke-linecap="round"/>
+          <path d="M1.42 9C4.76 5.69 8.23 4 12 4C15.77 4 19.24 5.69 22.58 9" stroke="rgba(76,192,192,0.4)" stroke-width="2" stroke-linecap="round"/>
+          <path d="M8.53 16.11C9.87 14.79 10.97 14 12 14C13.03 14 14.13 14.79 15.47 16.11" stroke="#4CC0C0" stroke-width="2" stroke-linecap="round"/>
+          <circle cx="12" cy="20" r="1.5" fill="#4CC0C0"/>
+        </svg>
+      </div>
+      <h3 data-i18n="feat4_h">Works Offline</h3>
+      <p data-i18n="feat4_p">No network? No problem. The badge is generated locally and synced when connection returns.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── WHO ─── -->
+<section class="who">
+  <div class="section-header">
+    <div class="section-tag reveal" data-i18n="who_tag">For Who</div>
+    <h2 class="reveal" data-i18n="who_h2">A universal tool.</h2>
+    <p class="reveal" data-i18n="who_p">QRpruf adapts to any professional or personal context that requires proof of presence.</p>
+  </div>
+  <div class="who-simple">
+    <div class="who-card reveal reveal-delay-1">
+      <span class="who-card-icon">👤</span>
+      <h3 data-i18n="who_personal_h">Personal</h3>
+      <p data-i18n="who_personal_p">Prove your presence, document a moment, certify a delivery — for any personal situation that requires trusted proof.</p>
+    </div>
+    <div class="who-card reveal reveal-delay-2">
+      <span class="who-card-icon">🏢</span>
+      <h3 data-i18n="who_pro_h">Professional</h3>
+      <p data-i18n="who_pro_p">Any profession that needs to certify an action, a presence, or a document — with legally-grade cryptographic proof.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ─── CTA ─── -->
+<section class="cta" id="waitlist">
+  <div class="cta-inner">
+    <div class="section-tag reveal" style="background:rgba(255,255,255,0.2);color:white" data-i18n="cta_tag">Early Access</div>
+    <h2 class="reveal" data-i18n="cta_h2">Be among the first.</h2>
+    <p class="cta-p reveal" data-i18n="cta_p">QRpruf is in field testing. Sign up for early access and help shape the product with us.</p>
+    <div class="cta-form reveal">
+      <input class="cta-input" type="email" id="email-input" data-i18n-placeholder="cta_placeholder" placeholder="your@email.com">
+      <button class="cta-submit" data-i18n="cta_btn" onclick="submitWaitlist()">Sign up</button>
+    </div>
+    <p class="cta-note reveal" data-i18n="cta_note">No spam. Priority access guaranteed. Cancel anytime.</p>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer>
+  <div class="footer-logo" style="display:flex;align-items:center;gap:8px"><img src="../assets/images/logomain.svg" width="24" height="24" style="filter:brightness(0) invert(1)">QRpruf</div>
+  <p data-i18n="footer_copy">© 2026 Sanadidari SARL — Casablanca, Morocco</p>
+  <p style="color:rgba(255,255,255,0.4);font-size:13px;">contact@qrpruf.com</p>
+</footer>
+
+<script>
+// ── Translations
+const T = {
+  en: {
+    nav_cta:"Early Access →", hero_badge:"Live field testing · Coming soon",
+    hero_h1_1:"Cryptographic proof", hero_h1_2:"of presence.",
+    hero_p:"A signed, geolocated, timestamped QR badge — generated in 3 seconds from your phone. For any use, anywhere.",
+    btn_primary:"Join the waitlist →", btn_secondary:"How it works",
+    problem_tag:"THE PROBLEM", problem_h2:"Presence is still proven with paper in 2026.",
+    problem_p:"Hours wasted, administrative errors, cancelled files. It was time for an alternative.",
+    counter1_label:"pages of report to prove a simple presence",
+    counter2_label:"seconds to generate a cryptographic QR badge",
+    how_tag:"3 STEPS", how_h2:"Simple. Fast. Tamper-proof.",
+    how_p:"From zero to cryptographic proof in under 10 seconds.",
+    step1_h:"Choose the context", step1_p:"Select your profile and purpose: presence, meeting, delivery, contract — dozens of use cases available.",
+    step2_h:"Capture the moment", step2_p:"Photo, video, audio or text — attach media that attests the situation. Works offline.",
+    step3_h:"QR badge generated", step3_p:"A unique cryptographic QR code, signed, geolocated and timestamped. Verifiable by anyone, anytime.",
+    feat_tag:"TECHNOLOGY", feat_h2:"Built to be uncontestable.",
+    feat_p:"Every QRpruf badge embeds a cryptographic proof chain impossible to falsify.",
+    feat1_h:"Cryptographic Signature", feat1_p:"Each badge is signed with a unique key. Any post-issue modification is immediately detectable.",
+    feat2_h:"Precise Geolocation", feat2_p:"GPS coordinates embedded with 20-meter precision. The location is an integral part of the proof.",
+    feat3_h:"Certified Timestamp", feat3_p:"The exact date and time are sealed in the badge. Impossible to claim a different moment.",
+    feat4_h:"Works Offline", feat4_p:"No network? No problem. The badge is generated locally and synced when connection returns.",
+    who_tag:"FOR WHO", who_h2:"A universal tool.",
+    who_p:"QRpruf adapts to any context — personal or professional — that requires trusted proof of presence.",
+    who_personal_h:"Personal", who_personal_p:"Prove your presence, document a moment, certify a delivery — for any personal situation that requires trusted proof.",
+    who_pro_h:"Professional", who_pro_p:"Any profession that needs to certify an action, a presence, or a document — with legally-grade cryptographic proof.",
+    cta_tag:"EARLY ACCESS", cta_h2:"Be among the first.",
+    cta_p:"QRpruf is in field testing. Sign up for early access and help shape the product with us.",
+    cta_placeholder:"your@email.com", cta_btn:"Sign up",
+    cta_note:"No spam. Priority access guaranteed. Cancel anytime.",
+    footer_copy:"© 2026 Sanadidari SARL — Casablanca, Morocco"
+  },
+  fr: {
+    nav_cta:"Accès anticipé →", hero_badge:"En test terrain · Bientôt disponible",
+    hero_h1_1:"La preuve de présence", hero_h1_2:"cryptographique.",
+    hero_p:"Un badge QR signé, géolocalisé et horodaté — généré en 3 secondes depuis votre téléphone. Pour tout usage, partout.",
+    btn_primary:"Rejoindre la liste d'attente →", btn_secondary:"Comment ça marche",
+    problem_tag:"LE PROBLÈME", problem_h2:"La présence se prouve encore avec du papier en 2026.",
+    problem_p:"Des heures perdues, des erreurs administratives, des dossiers annulés. Il était temps d'avoir une alternative.",
+    counter1_label:"pages de procès-verbal pour une simple présence",
+    counter2_label:"secondes pour générer un badge QR cryptographique",
+    how_tag:"3 ÉTAPES", how_h2:"Simple. Rapide. Inviolable.",
+    how_p:"De zéro à preuve cryptographique en moins de 10 secondes.",
+    step1_h:"Choisir le contexte", step1_p:"Sélectionnez votre profil et le but : présence, réunion, livraison, contrat — des dizaines d'usages disponibles.",
+    step2_h:"Capturer le moment", step2_p:"Photo, vidéo, audio ou texte — joignez les médias qui attestent la situation. Fonctionne hors ligne.",
+    step3_h:"Badge QR généré", step3_p:"Un QR code cryptographique unique, signé, géolocalisé et horodaté. Vérifiable par n'importe qui, à tout moment.",
+    feat_tag:"TECHNOLOGIE", feat_h2:"Conçu pour être incontestable.",
+    feat_p:"Chaque badge QRpruf embarque une chaîne de preuves cryptographiques impossible à falsifier.",
+    feat1_h:"Signature cryptographique", feat1_p:"Chaque badge est signé avec une clé unique. Toute modification post-émission est immédiatement détectable.",
+    feat2_h:"Géolocalisation précise", feat2_p:"Coordonnées GPS intégrées avec une précision de 20 mètres. Le lieu est une partie intégrante de la preuve.",
+    feat3_h:"Horodatage certifié", feat3_p:"La date et l'heure exactes sont scellées dans le badge. Impossible de prétendre à un autre moment.",
+    feat4_h:"Fonctionne hors ligne", feat4_p:"Pas de réseau ? Pas de problème. Le badge est généré localement et synchronisé dès que la connexion revient.",
+    who_tag:"POUR QUI", who_h2:"Un outil universel.",
+    who_p:"QRpruf s'adapte à tout contexte — personnel ou professionnel — qui nécessite une preuve de présence fiable.",
+    who_personal_h:"Particuliers", who_personal_p:"Prouvez votre présence, documentez un moment, certifiez une livraison — pour toute situation personnelle nécessitant une preuve fiable.",
+    who_pro_h:"Professionnels", who_pro_p:"Toute profession ayant besoin de certifier une action, une présence ou un document — avec une preuve cryptographique de qualité juridique.",
+    cta_tag:"ACCÈS ANTICIPÉ", cta_h2:"Soyez parmi les premiers.",
+    cta_p:"QRpruf est en phase de test terrain. Inscrivez-vous pour recevoir un accès anticipé et façonner le produit avec nous.",
+    cta_placeholder:"votre@email.com", cta_btn:"Je m'inscris",
+    cta_note:"Aucun spam. Accès prioritaire garanti. Annulation en un clic.",
+    footer_copy:"© 2026 Sanadidari SARL — Casablanca, Maroc"
+  },
+  ar: {
+    nav_cta:"← وصول مبكر", hero_badge:"اختبار ميداني · قريباً",
+    hero_h1_1:"إثبات الحضور", hero_h1_2:"التشفيري.",
+    hero_p:"شارة QR موقّعة، مُحدَّدة الموقع، مُوثَّقة زمنياً — تُولَّد في 3 ثوانٍ من هاتفك. لأي استخدام، في أي مكان.",
+    btn_primary:"← انضم إلى قائمة الانتظار", btn_secondary:"كيف يعمل",
+    problem_tag:"المشكلة", problem_h2:"لا يزال الحضور يُثبَت بالورق في عام 2026.",
+    problem_p:"ساعات ضائعة، أخطاء إدارية، ملفات مُلغاة. حان الوقت للبديل.",
+    counter1_label:"صفحات محضر لإثبات حضور بسيط",
+    counter2_label:"ثوانٍ لتوليد شارة QR تشفيرية",
+    how_tag:"3 خطوات", how_h2:"بسيط. سريع. لا يمكن التلاعب به.",
+    how_p:"من الصفر إلى الإثبات التشفيري في أقل من 10 ثوانٍ.",
+    step1_h:"اختيار السياق", step1_p:"اختر ملفك الشخصي والغرض: حضور، اجتماع، تسليم، عقد — عشرات حالات الاستخدام متاحة.",
+    step2_h:"التقاط اللحظة", step2_p:"صورة، فيديو، صوت أو نص — أضف الوسائط التي تُثبت الوضع. يعمل بدون إنترنت.",
+    step3_h:"تم توليد شارة QR", step3_p:"رمز QR تشفيري فريد، موقّع، مُحدَّد الموقع ومُوثَّق زمنياً. يمكن التحقق منه من أي شخص، في أي وقت.",
+    feat_tag:"التقنية", feat_h2:"مصمَّم ليكون غير قابل للطعن.",
+    feat_p:"كل شارة QRpruf تحمل سلسلة إثبات تشفيرية يستحيل تزويرها.",
+    feat1_h:"التوقيع التشفيري", feat1_p:"كل شارة موقّعة بمفتاح فريد. أي تعديل بعد الإصدار يُكتشف فوراً.",
+    feat2_h:"تحديد الموقع الدقيق", feat2_p:"إحداثيات GPS مدمجة بدقة 20 متراً. الموقع جزء لا يتجزأ من الإثبات.",
+    feat3_h:"توثيق زمني مُعتمَد", feat3_p:"التاريخ والوقت الدقيقان مختومان في الشارة. يستحيل ادعاء وقت آخر.",
+    feat4_h:"يعمل بدون إنترنت", feat4_p:"لا شبكة؟ لا مشكلة. تُولَّد الشارة محلياً وتُزامَن عند عودة الاتصال.",
+    who_tag:"لمن", who_h2:"أداة عالمية.",
+    who_p:"يتكيّف QRpruf مع أي سياق — شخصي أو مهني — يستلزم إثبات الحضور بشكل موثوق.",
+    who_personal_h:"الاستخدام الشخصي", who_personal_p:"أثبت حضورك، وثّق لحظة، اعتمد تسليماً — لأي وضع شخصي يحتاج إلى إثبات موثوق.",
+    who_pro_h:"الاستخدام المهني", who_pro_p:"أي مهنة تحتاج إلى تصديق إجراء، حضور أو وثيقة — بإثبات تشفيري ذو قيمة قانونية.",
+    cta_tag:"وصول مبكر", cta_h2:"كن من أوائل المستخدمين.",
+    cta_p:"QRpruf في مرحلة الاختبار الميداني. سجّل للحصول على وصول مبكر وساهم في تشكيل المنتج معنا.",
+    cta_placeholder:"بريدك@الإلكتروني.com", cta_btn:"أسجّل",
+    cta_note:"لا رسائل مزعجة. وصول أولوي مضمون. إلغاء في أي وقت.",
+    footer_copy:"© 2026 Sanadidari SARL — الدار البيضاء، المغرب"
+  }
+};
+
+let currentLang = 'en';
+
+function setLang(lang) {
+  currentLang = lang;
+  const t = T[lang];
+  const isRTL = lang === 'ar';
+
+  // Direction & lang
+  document.documentElement.setAttribute('lang', lang);
+  document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
+
+  // Title
+  const titles = { en:'QRpruf — Cryptographic Proof of Presence', fr:'QRpruf — La preuve de présence cryptographique', ar:'QRpruf — إثبات الحضور التشفيري' };
+  document.title = titles[lang];
+
+  // Translate all elements
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key] !== undefined) el.textContent = t[key];
+  });
+
+  // Translate placeholders
+  document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+    const key = el.dataset.i18nPlaceholder;
+    if (t[key] !== undefined) el.placeholder = t[key];
+  });
+
+  // Active button
+  document.querySelectorAll('.lang-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang || (lang === 'ar' && btn.textContent.trim() === 'ع'));
+  });
+}
+
+// ── Scroll reveal
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(el => { if (el.isIntersecting) el.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+
+// ── Animated counters
+function animateCounter(el) {
+  const target = parseInt(el.dataset.target);
+  const suffix = el.dataset.suffix || '';
+  let current = 0;
+  const step = target / 30;
+  const timer = setInterval(() => {
+    current += step;
+    if (current >= target) { current = target; clearInterval(timer); }
+    el.textContent = Math.round(current) + suffix;
+  }, 40);
+}
+const counterObserver = new IntersectionObserver(entries => {
+  entries.forEach(el => { if (el.isIntersecting) { animateCounter(el.target); counterObserver.unobserve(el.target); } });
+}, { threshold: 0.5 });
+document.querySelectorAll('.counter-num').forEach(el => counterObserver.observe(el));
+
+// ── Waitlist
+function submitWaitlist() {
+  const email = document.getElementById('email-input').value;
+  if (!email || !email.includes('@')) {
+    const msgs = { en:'Please enter a valid email.', fr:'Veuillez saisir un email valide.', ar:'يرجى إدخال بريد إلكتروني صالح.' };
+    alert(msgs[currentLang]); return;
+  }
+  const btn = document.querySelector('.cta-submit');
+  const confirms = { en:'✓ Registered!', fr:'✓ Inscrit !', ar:'✓ تم التسجيل!' };
+  btn.textContent = confirms[currentLang];
+  btn.style.background = '#22C55E';
+  btn.style.color = 'white';
+  document.getElementById('email-input').value = '';
+}
+
+// ── Clock
+let deg = 0;
+setInterval(() => {
+  deg += 6;
+  const hand = document.querySelector('.icon-clock .hand');
+  if (hand) hand.setAttribute('transform', `rotate(${deg},12,12)`);
+}, 100);
+</script>
+</body>
+</html>

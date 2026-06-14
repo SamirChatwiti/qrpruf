@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pitch Deck — B2B Order & Client Portal</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#0D1F3C;--teal:#4CC0C0;--teal-dark:#3AADAD;--teal-light:#E0F5F5;--muted:#6B7280;--border:#E5E7EB;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter','Noto Sans SC',sans-serif;background:#f0f4f8;color:#1A1A2E;}
+
+    /* Screen toolbar */
+    .toolbar{position:fixed;top:0;left:0;right:0;z-index:100;background:white;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;print-color-adjust:exact;}
+    .tb-left{display:flex;align-items:center;gap:14px;}
+    .tb-logo{font-weight:800;font-size:16px;color:var(--navy);}
+    .tb-tag{font-size:12px;color:var(--teal-dark);background:var(--teal-light);padding:3px 10px;border-radius:6px;font-weight:700;}
+    .lang-switcher{display:flex;gap:3px;background:#f4f4f5;border-radius:8px;padding:3px;}
+    .lang-btn{background:transparent;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;font-family:inherit;}
+    .lang-btn.active{background:white;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+    .btn-print{background:var(--teal);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.2s;}
+    .btn-print:hover{background:var(--teal-dark);}
+    .btn-back{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;}
+
+    /* Slides container */
+    .slides{padding:70px 24px 40px;display:flex;flex-direction:column;gap:24px;max-width:960px;margin:0 auto;}
+
+    /* Slide */
+    .slide{background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);aspect-ratio:16/9;position:relative;display:flex;flex-direction:column;justify-content:center;}
+
+    /* S1 - Cover */
+    .s1{background:linear-gradient(135deg,var(--navy) 0%,#1B4060 100%);color:white;align-items:center;text-align:center;}
+    .s1::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(76,192,192,0.12) 0%,transparent 70%);}
+    .s1-inner{position:relative;z-index:1;padding:40px;}
+    .s1-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(76,192,192,0.15);border:1px solid rgba(76,192,192,0.35);border-radius:30px;padding:6px 16px;font-size:12px;color:var(--teal);font-weight:700;margin-bottom:24px;letter-spacing:0.5px;text-transform:uppercase;}
+    .s1 h1{font-size:clamp(28px,4vw,52px);font-weight:800;color:white;line-height:1.1;margin-bottom:16px;}
+    .s1 h1 span{color:var(--teal);}
+    .s1-sub{font-size:clamp(14px,1.8vw,18px);color:rgba(255,255,255,0.62);max-width:500px;margin:0 auto 28px;line-height:1.6;}
+    .s1-meta{display:flex;align-items:center;justify-content:center;gap:24px;font-size:13px;color:rgba(255,255,255,0.4);}
+    .s1-meta span{display:flex;align-items:center;gap:6px;}
+
+    /* S2 - Problem */
+    .s2{padding:40px 50px;}
+    .slide-tag{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;color:var(--teal-dark);background:var(--teal-light);padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:18px;}
+    .slide-tag.red{color:#DC2626;background:#FEF2F2;}
+    .slide h2{font-size:clamp(22px,3vw,36px);font-weight:800;color:var(--navy);margin-bottom:28px;}
+    .pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+    .pain-card{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:18px 20px;}
+    .pain-icon{font-size:24px;margin-bottom:10px;display:block;}
+    .pain-card h4{font-size:14px;font-weight:700;color:#991B1B;margin-bottom:6px;}
+    .pain-card p{font-size:13px;color:#7F1D1D;line-height:1.6;}
+
+    /* S3 - Solution Overview */
+    .s3{background:var(--navy);padding:40px 50px;color:white;}
+    .s3::before{content:'';position:absolute;top:-30%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(76,192,192,0.1) 0%,transparent 70%);pointer-events:none;}
+    .s3-inner{position:relative;z-index:1;}
+    .s3 .slide-tag{color:var(--teal);background:rgba(76,192,192,0.15);border-color:rgba(76,192,192,0.3);}
+    .s3 h2{color:white;}
+    .sol-points{display:flex;flex-direction:column;gap:12px;margin-top:20px;}
+    .sol-point{display:flex;align-items:flex-start;gap:14px;background:rgba(255,255,255,0.05);border:1px solid rgba(76,192,192,0.2);border-radius:10px;padding:14px 18px;}
+    .sol-check{width:28px;height:28px;background:var(--teal);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;color:white;font-weight:bold;}
+    .sol-point p{font-size:14px;color:rgba(255,255,255,0.8);line-height:1.55;}
+
+    /* S4 - Features A */
+    .s4{padding:36px 50px;}
+    .feat-grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px;}
+    .feat-box{border:1.5px solid var(--border);border-radius:12px;padding:18px 16px;transition:border-color 0.2s;}
+    .feat-box:hover{border-color:var(--teal);}
+    .feat-box .fi{font-size:26px;margin-bottom:10px;display:block;}
+    .feat-box h4{font-size:14px;font-weight:700;color:var(--navy);margin-bottom:6px;}
+    .feat-box p{font-size:12px;color:var(--muted);line-height:1.6;}
+
+    /* S5 - Features B (same as S4) */
+
+    /* S6 - Dashboard Mockup */
+    .s6{padding:28px 40px;align-items:flex-start;justify-content:flex-start;}
+    .mock-preview{background:var(--navy);border-radius:12px;overflow:hidden;width:100%;flex:1;display:flex;flex-direction:column;}
+    .mock-bar{background:#1A3455;padding:8px 14px;display:flex;align-items:center;gap:6px;}
+    .md{width:8px;height:8px;border-radius:50%;}
+    .mock-bar-title{margin-left:8px;font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;}
+    .mock-content{display:flex;flex:1;}
+    .mock-sb{width:44px;background:#111C35;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:6px;border-right:1px solid rgba(255,255,255,0.06);}
+    .msb-i{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.35;}
+    .msb-i.a{background:rgba(76,192,192,0.2);opacity:1;}
+    .mock-m{flex:1;padding:12px;}
+    .mock-sr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:12px;}
+    .msc{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:8px 10px;}
+    .msc-v{font-size:16px;font-weight:800;color:white;}
+    .msc-v.tc{color:var(--teal);}
+    .msc-l{font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px;}
+    .mock-tbl{display:flex;flex-direction:column;gap:4px;}
+    .mtr{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.05);border-radius:6px;padding:7px 10px;}
+    .mtr-fl{font-size:13px;width:18px;text-align:center;}
+    .mtr-n{font-size:11px;font-weight:600;color:rgba(255,255,255,0.78);flex:1;}
+    .mtr-a{font-size:11px;font-weight:700;color:white;}
+    .mtr-b{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;}
+    .bs{background:rgba(76,192,192,0.18);color:var(--teal);}
+    .bc{background:rgba(245,158,11,0.18);color:#F59E0B;}
+    .bd{background:rgba(34,197,94,0.18);color:#4ADE80;}
+
+    /* S7 - Summary */
+    .s7{padding:40px 50px;}
+    .summary-table{width:100%;border-collapse:collapse;margin-top:20px;font-size:13px;}
+    .summary-table th{text-align:left;padding:10px 14px;background:var(--teal);color:white;font-weight:700;}
+    .summary-table th:first-child{border-radius:8px 0 0 0;}
+    .summary-table th:last-child{border-radius:0 8px 0 0;}
+    .summary-table td{padding:10px 14px;border-bottom:1px solid var(--border);color:#374151;vertical-align:top;}
+    .summary-table tr:last-child td{border-bottom:none;}
+    .summary-table tr:nth-child(even) td{background:#F9FAFB;}
+    .check-icon{color:var(--teal);font-weight:bold;}
+
+    /* S8 - Next Steps */
+    .s8{background:linear-gradient(135deg,var(--teal) 0%,var(--teal-dark) 100%);padding:40px 50px;color:white;align-items:center;text-align:center;}
+    .s8::before{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);}
+    .s8-inner{position:relative;z-index:1;}
+    .s8 h2{font-size:clamp(22px,3.5vw,40px);font-weight:800;color:white;margin-bottom:16px;}
+    .s8-sub{font-size:clamp(14px,1.8vw,18px);color:rgba(255,255,255,0.78);margin-bottom:30px;max-width:480px;margin-left:auto;margin-right:auto;line-height:1.6;}
+    .steps-row{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;}
+    .step-pill{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:14px 20px;text-align:center;min-width:130px;}
+    .step-pill .sn{font-size:22px;font-weight:800;color:white;display:block;}
+    .step-pill .sl{font-size:12px;color:rgba(255,255,255,0.7);margin-top:4px;}
+    .contact-box{margin-top:24px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:16px 24px;display:inline-block;}
+    .contact-box p{font-size:14px;color:rgba(255,255,255,0.7);margin-bottom:4px;}
+    .contact-box a{font-size:16px;font-weight:700;color:white;text-decoration:none;}
+    .contact-box a:hover{text-decoration:underline;}
+
+    /* Slide label */
+    .slide-num{position:absolute;bottom:14px;right:18px;font-size:11px;color:rgba(0,0,0,0.2);font-weight:600;}
+    .slide-num.light{color:rgba(255,255,255,0.25);}
+
+    /* Mobile */
+    @media (max-width:640px){
+      .toolbar{padding:8px 14px;flex-wrap:nowrap;}
+      .tb-tag{display:none;}
+      .btn-back span,.btn-print span{display:none;}
+      .btn-back{padding:7px 10px;font-size:12px;}
+      .btn-print{padding:7px 10px;font-size:12px;}
+      .slides{padding:58px 10px 28px;gap:14px;}
+      .slide{aspect-ratio:unset;min-height:auto;}
+      .s1-inner{padding:28px 18px;}
+      .s2,.s4,.s7{padding:24px 18px;}
+      .s3{padding:24px 18px;}
+      .s6{padding:14px 14px;}
+      .s8{padding:28px 18px;}
+      .pain-grid{grid-template-columns:1fr;}
+      .feat-grid-3{grid-template-columns:1fr;}
+      .mock-sr{grid-template-columns:repeat(2,1fr);}
+      .steps-row{gap:8px;}
+      .step-pill{min-width:70px;padding:10px 12px;}
+      .summary-table{font-size:11px;}
+      .summary-table td,.summary-table th{padding:7px 8px;}
+    }
+
+    /* Print */
+    @media print{
+      body{background:white;}
+      .toolbar{display:none!important;}
+      .slides{padding:0;gap:0;max-width:100%;}
+      .slide{border-radius:0;box-shadow:none;page-break-after:always;aspect-ratio:16/9;height:auto;min-height:100vh;}
+    }
+  </style>
+</head>
+<body>
+
+<!-- TOOLBAR -->
+<div class="toolbar">
+  <div class="tb-left">
+    <span class="tb-logo">QRpruf</span>
+    <span class="tb-tag" data-i18n="tag">Proposition 01 — B2B Client Portal</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('zh')">中文</button>
+    </div>
+    <a href="index.html" class="btn-back" data-i18n="back">← Back</a>
+    <button class="btn-print" onclick="window.print()" data-i18n="print">🖨 Save as PDF</button>
+  </div>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: COVER -->
+  <div class="slide s1">
+    <div class="s1-inner">
+      <div class="s1-badge">🌐 <span data-i18n="s1_badge">Proposition 01 · External Platform</span></div>
+      <h1><span data-i18n="s1_h1a">B2B Order &</span><br><span data-i18n="s1_h1b">Client Portal</span></h1>
+      <p class="s1-sub" data-i18n="s1_sub">Your buyers stop emailing orders. Everything online, tracked, documented — in their language.</p>
+      <div class="s1-meta">
+        <span>🔒 <span data-i18n="s1_conf">Confidential Proposal</span></span>
+        <span>📅 2026</span>
+        <span>✉️ schatwiti@sanadidari.com</span>
+      </div>
+    </div>
+    <span class="slide-num light">1 / 8</span>
+  </div>
+
+  <!-- SLIDE 2: PROBLEM -->
+  <div class="slide s2">
+    <div>
+      <span class="slide-tag red" data-i18n="s2_tag">The Problem Today</span>
+      <h2 data-i18n="s2_h2">Managing buyers with WhatsApp is costing you.</h2>
+      <div class="pain-grid">
+        <div class="pain-card">
+          <span class="pain-icon">📱</span>
+          <h4 data-i18n="p1_title">Lost Orders</h4>
+          <p data-i18n="p1_desc">Orders sent via WhatsApp, WeChat, and email are scattered, easy to miss, and hard to track.</p>
+        </div>
+        <div class="pain-card">
+          <span class="pain-icon">💬</span>
+          <h4 data-i18n="p2_title">Price Confusion</h4>
+          <p data-i18n="p2_desc">Each buyer has negotiated different prices. Mistakes happen when managed manually.</p>
+        </div>
+        <div class="pain-card">
+          <span class="pain-icon">📋</span>
+          <h4 data-i18n="p3_title">Manual Invoicing</h4>
+          <p data-i18n="p3_desc">You spend hours creating and sending invoices by hand, instead of focusing on your business.</p>
+        </div>
+        <div class="pain-card">
+          <span class="pain-icon">❓</span>
+          <h4 data-i18n="p4_title">No Visibility</h4>
+          <p data-i18n="p4_desc">Buyers have no way to track their shipments — they call you daily instead of checking online.</p>
+        </div>
+      </div>
+    </div>
+    <span class="slide-num">2 / 8</span>
+  </div>
+
+  <!-- SLIDE 3: SOLUTION -->
+  <div class="slide s3">
+    <div class="s3-inner">
+      <span class="slide-tag" data-i18n="s3_tag">Our Solution</span>
+      <h2 data-i18n="s3_h2">A private branded portal for all your buyers</h2>
+      <div class="sol-points">
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol1">Each buyer gets their own account with their negotiated prices — no more manual price management.</p></div>
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol2">Buyers place orders online 24/7 from any device — you wake up to organized orders in your dashboard.</p></div>
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol3">Real-time shipment tracking for every container — buyers see their delivery status without calling you.</p></div>
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol4">Invoices and packing lists generated and downloadable automatically — zero admin work on your end.</p></div>
+      </div>
+    </div>
+    <span class="slide-num light">3 / 8</span>
+  </div>
+
+  <!-- SLIDE 4: FEATURES A -->
+  <div class="slide s4">
+    <div style="width:100%">
+      <span class="slide-tag" data-i18n="s4_tag">Key Features (1/2)</span>
+      <h2 data-i18n="s4_h2">Built for international trade</h2>
+      <div class="feat-grid-3">
+        <div class="feat-box"><span class="fi">🏪</span><h4 data-i18n="f1t">Multi-Client Catalog</h4><p data-i18n="f1d">Each buyer sees their own negotiated prices. You manage the catalog — add, update, or hide products at any time.</p></div>
+        <div class="feat-box"><span class="fi">📋</span><h4 data-i18n="f2t">Online Order Placement</h4><p data-i18n="f2d">Buyers order 24/7 from any device. All orders are organized in your dashboard, ready to process.</p></div>
+        <div class="feat-box"><span class="fi">🚢</span><h4 data-i18n="f3t">Shipment Tracking</h4><p data-i18n="f3d">Container status and ETA visible to you and your buyer. No more "where is my order?" calls.</p></div>
+      </div>
+    </div>
+    <span class="slide-num">4 / 8</span>
+  </div>
+
+  <!-- SLIDE 5: FEATURES B -->
+  <div class="slide s4">
+    <div style="width:100%">
+      <span class="slide-tag" data-i18n="s5_tag">Key Features (2/2)</span>
+      <h2 data-i18n="s5_h2">Professional, multilingual, branded</h2>
+      <div class="feat-grid-3">
+        <div class="feat-box"><span class="fi">📄</span><h4 data-i18n="f4t">Invoice & Document Hub</h4><p data-i18n="f4d">Commercial invoices and packing lists generated automatically. Buyers download them directly — no more email chains.</p></div>
+        <div class="feat-box"><span class="fi">🌍</span><h4 data-i18n="f5t">Multi-Language</h4><p data-i18n="f5d">English, French, Arabic — and more. Every buyer accesses the portal in their own language, increasing trust.</p></div>
+        <div class="feat-box"><span class="fi">🏷️</span><h4 data-i18n="f6t">Your Brand, Your Portal</h4><p data-i18n="f6d">The portal uses your name and logo. Buyers see a professional digital storefront — reinforcing your brand.</p></div>
+      </div>
+    </div>
+    <span class="slide-num">5 / 8</span>
+  </div>
+
+  <!-- SLIDE 6: DASHBOARD MOCKUP -->
+  <div class="slide s6" style="flex-direction:column;padding:20px 28px;">
+    <div style="margin-bottom:10px;">
+      <span class="slide-tag" data-i18n="s6_tag">Dashboard Preview</span>
+      <h2 style="font-size:clamp(18px,2.5vw,28px);color:var(--navy);" data-i18n="s6_h2">What you see every day</h2>
+    </div>
+    <div class="mock-preview">
+      <div class="mock-bar">
+        <div class="md" style="background:#FF5F57"></div>
+        <div class="md" style="background:#FEBC2E"></div>
+        <div class="md" style="background:#28C840"></div>
+        <span class="mock-bar-title" data-i18n="s6_mock_title">TradePortal — Orders Dashboard</span>
+      </div>
+      <div class="mock-content">
+        <div class="mock-sb">
+          <div class="msb-i a">📋</div>
+          <div class="msb-i">👥</div>
+          <div class="msb-i">🏪</div>
+          <div class="msb-i">📄</div>
+          <div class="msb-i">🚢</div>
+        </div>
+        <div class="mock-m">
+          <div class="mock-sr">
+            <div class="msc"><div class="msc-v tc">14</div><div class="msc-l" data-i18n="ms1">Today's Orders</div></div>
+            <div class="msc"><div class="msc-v">$48,230</div><div class="msc-l" data-i18n="ms2">Revenue</div></div>
+            <div class="msc"><div class="msc-v">28</div><div class="msc-l" data-i18n="ms3">Active Clients</div></div>
+            <div class="msc"><div class="msc-v tc">6</div><div class="msc-l" data-i18n="ms4">Pending Shipments</div></div>
+          </div>
+          <div class="mock-tbl">
+            <div class="mtr"><span class="mtr-fl">🇲🇦</span><span class="mtr-n">Atlas Import SARL</span><span class="mtr-a">$12,400</span><span class="mtr-b bs" data-i18n="b1">Shipped</span></div>
+            <div class="mtr"><span class="mtr-fl">🇫🇷</span><span class="mtr-n">Paris Distribution Co.</span><span class="mtr-a">$8,200</span><span class="mtr-b bc" data-i18n="b2">Confirmed</span></div>
+            <div class="mtr"><span class="mtr-fl">🇦🇪</span><span class="mtr-n">Dubai Trade Group</span><span class="mtr-a">$22,100</span><span class="mtr-b bd" data-i18n="b3">Delivered</span></div>
+            <div class="mtr"><span class="mtr-fl">🇩🇿</span><span class="mtr-n">Alger Commerce Int'l</span><span class="mtr-a">$5,800</span><span class="mtr-b bc" data-i18n="b2">Confirmed</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="slide-num">6 / 8</span>
+  </div>
+
+  <!-- SLIDE 7: SUMMARY -->
+  <div class="slide s7">
+    <div style="width:100%">
+      <span class="slide-tag" data-i18n="s7_tag">At a Glance</span>
+      <h2 data-i18n="s7_h2">Everything your operation needs</h2>
+      <table class="summary-table">
+        <thead><tr><th data-i18n="th1">Feature</th><th data-i18n="th2">Without Portal</th><th data-i18n="th3">With TradePortal</th></tr></thead>
+        <tbody>
+          <tr><td data-i18n="r1f">Order Management</td><td data-i18n="r1b">📱 WhatsApp / email chaos</td><td>✅ <span data-i18n="r1a">Organized dashboard, 24/7</span></td></tr>
+          <tr><td data-i18n="r2f">Pricing per client</td><td data-i18n="r2b">📋 Manual Excel tracking</td><td>✅ <span data-i18n="r2a">Automatic per-buyer pricing</span></td></tr>
+          <tr><td data-i18n="r3f">Shipment Tracking</td><td data-i18n="r3b">📞 Daily calls from buyers</td><td>✅ <span data-i18n="r3a">Real-time buyer self-service</span></td></tr>
+          <tr><td data-i18n="r4f">Invoicing</td><td data-i18n="r4b">⏱ Hours of manual work</td><td>✅ <span data-i18n="r4a">Auto-generated & downloadable</span></td></tr>
+          <tr><td data-i18n="r5f">Languages</td><td data-i18n="r5b">🌍 One language only</td><td>✅ <span data-i18n="r5a">EN / FR / AR + more</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <span class="slide-num">7 / 8</span>
+  </div>
+
+  <!-- SLIDE 8: NEXT STEPS -->
+  <div class="slide s8">
+    <div class="s8-inner">
+      <h2 data-i18n="s8_h2">Ready to move forward?</h2>
+      <p class="s8-sub" data-i18n="s8_sub">Let's schedule a call to define the exact scope, timeline, and investment for your portal.</p>
+      <div class="steps-row">
+        <div class="step-pill"><span class="sn">01</span><span class="sl" data-i18n="st1">Discovery Call</span></div>
+        <div class="step-pill"><span class="sn">02</span><span class="sl" data-i18n="st2">Scope & Design</span></div>
+        <div class="step-pill"><span class="sn">03</span><span class="sl" data-i18n="st3">Development</span></div>
+        <div class="step-pill"><span class="sn">04</span><span class="sl" data-i18n="st4">Go Live</span></div>
+      </div>
+      <div class="contact-box">
+        <p data-i18n="s8_contact_lbl">Contact us to get started</p>
+        <a href="mailto:schatwiti@sanadidari.com">✉️ schatwiti@sanadidari.com</a>
+        <a href="mailto:schatwiti@gmail.com" style="font-size:13px;opacity:0.65;display:block;margin-top:4px;color:white;text-decoration:none;">schatwiti@gmail.com</a>
+      </div>
+    </div>
+    <span class="slide-num light">8 / 8</span>
+  </div>
+
+</div>
+
+<script>
+const T = {
+  en: {
+    tag:'Proposition 01 — B2B Client Portal', back:'← Back', print:'🖨 Save as PDF',
+    s1_badge:'Proposition 01 · External Platform', s1_h1a:'B2B Order &', s1_h1b:'Client Portal',
+    s1_sub:'Your buyers stop emailing orders. Everything online, tracked, documented — in their language.',
+    s1_conf:'Confidential Proposal',
+    s2_tag:'The Problem Today', s2_h2:'Managing buyers with WhatsApp is costing you.',
+    p1_title:'Lost Orders', p1_desc:'Orders sent via WhatsApp, WeChat, and email are scattered, easy to miss, and hard to track.',
+    p2_title:'Price Confusion', p2_desc:'Each buyer has negotiated different prices. Mistakes happen when managed manually.',
+    p3_title:'Manual Invoicing', p3_desc:'You spend hours creating and sending invoices by hand, instead of focusing on your business.',
+    p4_title:'No Visibility', p4_desc:'Buyers have no way to track their shipments — they call you daily instead of checking online.',
+    s3_tag:'Our Solution', s3_h2:'A private branded portal for all your buyers',
+    sol1:'Each buyer gets their own account with their negotiated prices — no more manual price management.',
+    sol2:'Buyers place orders online 24/7 from any device — you wake up to organized orders in your dashboard.',
+    sol3:'Real-time shipment tracking for every container — buyers see their delivery status without calling you.',
+    sol4:'Invoices and packing lists generated and downloadable automatically — zero admin work on your end.',
+    s4_tag:'Key Features (1/2)', s4_h2:'Built for international trade',
+    f1t:'Multi-Client Catalog', f1d:'Each buyer sees their own negotiated prices. You manage the catalog — add, update, or hide products at any time.',
+    f2t:'Online Order Placement', f2d:'Buyers order 24/7 from any device. All orders are organized in your dashboard, ready to process.',
+    f3t:'Shipment Tracking', f3d:'Container status and ETA visible to you and your buyer. No more "where is my order?" calls.',
+    s5_tag:'Key Features (2/2)', s5_h2:'Professional, multilingual, branded',
+    f4t:'Invoice & Document Hub', f4d:'Commercial invoices and packing lists generated automatically. Buyers download them directly.',
+    f5t:'Multi-Language', f5d:'English, French, Arabic — and more. Every buyer accesses the portal in their own language.',
+    f6t:'Your Brand, Your Portal', f6d:'The portal uses your name and logo. Buyers see a professional digital storefront.',
+    s6_tag:'Dashboard Preview', s6_h2:'What you see every day', s6_mock_title:'TradePortal — Orders Dashboard',
+    ms1:"Today's Orders", ms2:'Revenue', ms3:'Active Clients', ms4:'Pending Shipments',
+    b1:'Shipped', b2:'Confirmed', b3:'Delivered',
+    s7_tag:'At a Glance', s7_h2:'Everything your operation needs',
+    th1:'Feature', th2:'Without Portal', th3:'With TradePortal',
+    r1f:'Order Management', r1b:'📱 WhatsApp / email chaos', r1a:'Organized dashboard, 24/7',
+    r2f:'Pricing per client', r2b:'📋 Manual Excel tracking', r2a:'Automatic per-buyer pricing',
+    r3f:'Shipment Tracking', r3b:'📞 Daily calls from buyers', r3a:'Real-time buyer self-service',
+    r4f:'Invoicing', r4b:'⏱ Hours of manual work', r4a:'Auto-generated & downloadable',
+    r5f:'Languages', r5b:'🌍 One language only', r5a:'EN / FR / AR + more',
+    s8_h2:'Ready to move forward?', s8_sub:"Let's schedule a call to define the exact scope, timeline, and investment for your portal.",
+    st1:'Discovery Call', st2:'Scope & Design', st3:'Development', st4:'Go Live',
+    s8_contact_lbl:'Contact us to get started'
+  },
+  zh: {
+    tag:'方案一 — B2B客户门户', back:'← 返回', print:'🖨 保存为PDF',
+    s1_badge:'方案一 · 外部管理平台', s1_h1a:'B2B订单与', s1_h1b:'客户管理平台',
+    s1_sub:'您的买家不再通过邮件下单。一切在线上完成，可追踪，有记录——以他们自己的语言。',
+    s1_conf:'机密提案',
+    s2_tag:'当前痛点', s2_h2:'用WhatsApp管理买家，正在让您付出代价。',
+    p1_title:'订单丢失', p1_desc:'通过WhatsApp、微信和电子邮件发送的订单分散各处，容易遗漏，难以追踪。',
+    p2_title:'价格混淆', p2_desc:'每个买家的议定价格各不相同，手动管理时容易出现错误。',
+    p3_title:'手动开票', p3_desc:'您花费大量时间手动创建和发送发票，无法专注于核心业务。',
+    p4_title:'缺乏可视性', p4_desc:'买家无法追踪自己的货物——他们每天打电话询问，而不是自行在线查询。',
+    s3_tag:'我们的解决方案', s3_h2:'为您的所有买家提供一个专属品牌门户',
+    sol1:'每位买家拥有自己的账户，显示各自议定的价格——告别手动价格管理。',
+    sol2:'买家可全天候在任何设备上在线下单——您每天早上醒来就能看到整齐有序的订单。',
+    sol3:'每个集装箱的实时货物追踪——买家无需打电话就能查看交货状态。',
+    sol4:'发票和装箱单自动生成并可下载——您的行政工作量降至零。',
+    s4_tag:'核心功能（1/2）', s4_h2:'专为国际贸易打造',
+    f1t:'多客户产品目录', f1d:'每位买家看到各自议定的价格。您管理产品目录——随时添加、更新或隐藏产品。',
+    f2t:'在线下单', f2d:'买家可全天候在任何设备上下单。所有订单整齐呈现在您的后台，随时可以处理。',
+    f3t:'货物追踪', f3d:'您和买家都能看到集装箱状态和预计到达时间。告别每日"我的货到哪了"的询问。',
+    s5_tag:'核心功能（2/2）', s5_h2:'专业、多语言、品牌化',
+    f4t:'发票与单据管理', f4d:'商业发票和装箱单自动生成。买家直接下载，彻底告别邮件往来。',
+    f5t:'多语言支持', f5d:'英语、法语、阿拉伯语——更多语言可添加。每位买家都能以自己的语言使用平台。',
+    f6t:'专属品牌门户', f6d:'平台使用您的名称和标志。买家看到的是专业的数字化门户，强化您的品牌形象。',
+    s6_tag:'仪表盘预览', s6_h2:'您每天看到的界面', s6_mock_title:'贸易门户 — 订单管理中心',
+    ms1:'今日订单', ms2:'营业额', ms3:'活跃客户', ms4:'待发货',
+    b1:'已发货', b2:'已确认', b3:'已送达',
+    s7_tag:'一览无余', s7_h2:'您的运营所需的一切',
+    th1:'功能', th2:'没有门户', th3:'有了贸易门户',
+    r1f:'订单管理', r1b:'📱 微信/邮件混乱', r1a:'全天候有序管理后台',
+    r2f:'客户定价', r2b:'📋 手动Excel追踪', r2a:'按买家自动定价',
+    r3f:'货物追踪', r3b:'📞 买家每日来电询问', r3a:'买家实时自助查询',
+    r4f:'发票', r4b:'⏱ 数小时手动工作', r4a:'自动生成，可下载',
+    r5f:'语言', r5b:'🌍 仅支持一种语言', r5a:'英/法/阿拉伯语及更多',
+    s8_h2:'准备好迈出下一步了吗？', s8_sub:'让我们安排一次通话，明确您的门户的具体范围、时间表和投资方案。',
+    st1:'需求沟通', st2:'范围与设计', st3:'开发实施', st4:'正式上线',
+    s8_contact_lbl:'联系我们开始合作'
+  }
+};
+function setLang(l){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${l}')"]`).classList.add('active');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.textContent=T[l][k];});
+  document.body.style.fontFamily=l==='zh'?"'Noto Sans SC','Inter',sans-serif":"'Inter','Noto Sans SC',sans-serif";
+  document.title=l==='zh'?'提案PPT — B2B订单与客户管理平台':'Pitch Deck — B2B Order & Client Portal';
+}
+</script>
+</body>
+</html>

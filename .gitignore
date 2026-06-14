@@ -1,0 +1,39 @@
+﻿# Secrets
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.jks
+key.properties
+
+# Flutter/Dart
+.dart_tool/
+build/
+.packages
+.pub-cache/
+.pub/
+.flutter-plugins
+.flutter-plugins-dependencies
+
+# Android
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# iOS/macOS
+ios/Pods/
+ios/.symlinks/
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+macos/Pods/
+macos/.symlinks/
+
+# IDE
+.vscode/
+.idea/
+*.iml
+
+# OS
+.DS_Store
+Thumbs.db

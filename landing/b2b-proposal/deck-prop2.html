@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pitch Deck — Agent & Distributor Network Platform</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root{--navy:#0D1F3C;--gold:#F59E0B;--gold-dark:#D97706;--gold-light:#FEF3C7;--teal:#4CC0C0;--muted:#6B7280;--border:#E5E7EB;}
+    *{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:'Inter','Noto Sans SC',sans-serif;background:#f0f4f8;color:#1A1A2E;}
+    .toolbar{position:fixed;top:0;left:0;right:0;z-index:100;background:white;border-bottom:1px solid var(--border);padding:10px 28px;display:flex;align-items:center;justify-content:space-between;gap:12px;}
+    .tb-left{display:flex;align-items:center;gap:14px;}
+    .tb-logo{font-weight:800;font-size:16px;color:var(--navy);}
+    .tb-tag{font-size:12px;color:var(--gold-dark);background:var(--gold-light);padding:3px 10px;border-radius:6px;font-weight:700;}
+    .lang-switcher{display:flex;gap:3px;background:#f4f4f5;border-radius:8px;padding:3px;}
+    .lang-btn{background:transparent;border:none;border-radius:6px;padding:4px 12px;font-size:12px;font-weight:600;cursor:pointer;color:var(--muted);transition:all 0.2s;font-family:inherit;}
+    .lang-btn.active{background:white;color:var(--navy);box-shadow:0 1px 3px rgba(0,0,0,0.1);}
+    .btn-print{background:var(--gold);color:white;border:none;border-radius:8px;padding:8px 20px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit;transition:background 0.2s;}
+    .btn-print:hover{background:var(--gold-dark);}
+    .btn-back{background:transparent;color:var(--muted);border:1px solid var(--border);border-radius:8px;padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;text-decoration:none;display:inline-block;}
+    .slides{padding:70px 24px 40px;display:flex;flex-direction:column;gap:24px;max-width:960px;margin:0 auto;}
+    .slide{background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);aspect-ratio:16/9;position:relative;display:flex;flex-direction:column;justify-content:center;}
+    .slide-num{position:absolute;bottom:14px;right:18px;font-size:11px;color:rgba(0,0,0,0.2);font-weight:600;}
+    .slide-num.light{color:rgba(255,255,255,0.25);}
+
+    /* S1 Cover */
+    .s1{background:linear-gradient(135deg,var(--navy) 0%,#1a2d4a 60%,#2a3a1a 100%);align-items:center;text-align:center;}
+    .s1::before{content:'';position:absolute;top:-20%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(245,158,11,0.12) 0%,transparent 70%);}
+    .s1-inner{position:relative;z-index:1;padding:40px;}
+    .s1-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,158,11,0.15);border:1px solid rgba(245,158,11,0.35);border-radius:30px;padding:6px 16px;font-size:12px;color:var(--gold);font-weight:700;margin-bottom:24px;letter-spacing:0.5px;text-transform:uppercase;}
+    .s1 h1{font-size:clamp(26px,3.8vw,50px);font-weight:800;color:white;line-height:1.1;margin-bottom:16px;}
+    .s1 h1 span{color:var(--gold);}
+    .s1-sub{font-size:clamp(13px,1.6vw,17px);color:rgba(255,255,255,0.62);max-width:500px;margin:0 auto 28px;line-height:1.6;}
+    .s1-meta{display:flex;align-items:center;justify-content:center;gap:24px;font-size:13px;color:rgba(255,255,255,0.4);}
+
+    /* Common slide */
+    .sp{padding:36px 50px;}
+    .slide-tag{font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:4px 12px;border-radius:20px;display:inline-block;margin-bottom:16px;}
+    .st-gold{color:var(--gold-dark);background:var(--gold-light);}
+    .st-red{color:#DC2626;background:#FEF2F2;}
+    .st-navy{color:var(--teal);background:rgba(76,192,192,0.15);}
+    .slide h2{font-size:clamp(20px,2.8vw,34px);font-weight:800;color:var(--navy);margin-bottom:20px;line-height:1.2;}
+
+    /* Pain grid */
+    .pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+    .pain-card{background:#FEF2F2;border:1px solid #FECACA;border-radius:12px;padding:16px 18px;}
+    .pi{font-size:22px;margin-bottom:8px;display:block;}
+    .pain-card h4{font-size:13px;font-weight:700;color:#991B1B;margin-bottom:5px;}
+    .pain-card p{font-size:12px;color:#7F1D1D;line-height:1.6;}
+
+    /* Solution dark */
+    .sdark{background:var(--navy);padding:36px 50px;color:white;}
+    .sdark::before{content:'';position:absolute;top:-30%;right:-10%;width:500px;height:500px;background:radial-gradient(circle,rgba(245,158,11,0.1) 0%,transparent 70%);pointer-events:none;}
+    .sdark-inner{position:relative;z-index:1;}
+    .sdark h2{color:white;margin-bottom:18px;}
+    .sol-points{display:flex;flex-direction:column;gap:10px;}
+    .sol-point{display:flex;align-items:flex-start;gap:12px;background:rgba(255,255,255,0.05);border:1px solid rgba(245,158,11,0.2);border-radius:10px;padding:12px 16px;}
+    .sol-check{width:26px;height:26px;background:var(--gold);border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;flex-shrink:0;color:white;font-weight:bold;}
+    .sol-point p{font-size:13px;color:rgba(255,255,255,0.78);line-height:1.55;}
+
+    /* Feat grid */
+    .fg3{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:18px;}
+    .fb{border:1.5px solid var(--border);border-radius:12px;padding:16px 14px;transition:border-color 0.2s;}
+    .fb:hover{border-color:var(--gold);}
+    .fb .fi{font-size:24px;margin-bottom:8px;display:block;}
+    .fb h4{font-size:13px;font-weight:700;color:var(--navy);margin-bottom:5px;}
+    .fb p{font-size:11.5px;color:var(--muted);line-height:1.6;}
+
+    /* Mockup */
+    .s6p{padding:18px 28px;flex-direction:column;align-items:flex-start;justify-content:flex-start;}
+    .mp{background:var(--navy);border-radius:12px;overflow:hidden;width:100%;flex:1;display:flex;flex-direction:column;}
+    .mbar{background:#1A3455;padding:8px 14px;display:flex;align-items:center;gap:6px;}
+    .mdd{width:8px;height:8px;border-radius:50%;}
+    .mbar-t{margin-left:8px;font-size:11px;color:rgba(255,255,255,0.4);font-weight:600;}
+    .mc{display:flex;flex:1;}
+    .msb{width:44px;background:#111C35;display:flex;flex-direction:column;align-items:center;padding:10px 0;gap:6px;border-right:1px solid rgba(255,255,255,0.06);}
+    .msi{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;opacity:0.35;}
+    .msi.a{background:rgba(245,158,11,0.2);opacity:1;}
+    .mm{flex:1;padding:10px 12px;}
+    .msr{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;}
+    .msc{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.07);border-radius:8px;padding:8px 10px;}
+    .msv{font-size:16px;font-weight:800;color:white;}
+    .msv.gc{color:var(--gold);}
+    .msl{font-size:9px;color:rgba(255,255,255,0.35);margin-top:2px;}
+    .mtbl{display:flex;flex-direction:column;gap:4px;}
+    .mtr{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.05);border-radius:6px;padding:7px 10px;}
+    .mfl{font-size:13px;width:18px;text-align:center;}
+    .mn{font-size:11px;font-weight:600;color:rgba(255,255,255,0.78);flex:1;}
+    .ma{font-size:11px;font-weight:700;color:white;}
+    .mb{font-size:9px;font-weight:700;padding:2px 6px;border-radius:4px;}
+    .bg{background:rgba(245,158,11,0.18);color:var(--gold);}
+    .bs{background:rgba(148,163,184,0.18);color:#94A3B8;}
+    .pw{margin-top:8px;}
+    .pr{display:flex;align-items:center;gap:8px;margin-bottom:5px;}
+    .pl{font-size:10px;color:rgba(255,255,255,0.42);width:68px;flex-shrink:0;}
+    .pb{flex:1;height:5px;background:rgba(255,255,255,0.08);border-radius:3px;overflow:hidden;}
+    .pf{height:100%;border-radius:3px;}
+    .pfg{background:var(--gold);}
+    .pft{background:var(--teal);}
+    .pfs{background:#94A3B8;}
+    .pv{font-size:10px;color:rgba(255,255,255,0.35);width:32px;text-align:right;flex-shrink:0;}
+
+    /* Summary */
+    .sum-t{width:100%;border-collapse:collapse;margin-top:16px;font-size:12.5px;}
+    .sum-t th{text-align:left;padding:9px 12px;background:var(--gold);color:white;font-weight:700;}
+    .sum-t th:first-child{border-radius:7px 0 0 0;}
+    .sum-t th:last-child{border-radius:0 7px 0 0;}
+    .sum-t td{padding:9px 12px;border-bottom:1px solid var(--border);color:#374151;vertical-align:top;}
+    .sum-t tr:last-child td{border-bottom:none;}
+    .sum-t tr:nth-child(even) td{background:#FAFAFA;}
+
+    /* CTA */
+    .s8{background:linear-gradient(135deg,var(--gold) 0%,var(--gold-dark) 60%,#b45309 100%);padding:36px 50px;color:white;align-items:center;text-align:center;}
+    .s8::before{content:'';position:absolute;top:-50%;left:50%;transform:translateX(-50%);width:700px;height:700px;background:radial-gradient(circle,rgba(255,255,255,0.1) 0%,transparent 70%);}
+    .s8-in{position:relative;z-index:1;}
+    .s8 h2{font-size:clamp(20px,3.2vw,38px);font-weight:800;color:white;margin-bottom:14px;}
+    .s8-sub{font-size:clamp(13px,1.7vw,17px);color:rgba(255,255,255,0.78);margin-bottom:28px;max-width:460px;margin-left:auto;margin-right:auto;line-height:1.6;}
+    .steps-row{display:flex;justify-content:center;gap:14px;flex-wrap:wrap;}
+    .sp-pill{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:12px 18px;text-align:center;min-width:120px;}
+    .sp-pill .sn{font-size:20px;font-weight:800;color:white;display:block;}
+    .sp-pill .sl{font-size:12px;color:rgba(255,255,255,0.7);margin-top:3px;}
+    .cb{margin-top:22px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.25);border-radius:12px;padding:14px 22px;display:inline-block;}
+    .cb p{font-size:13px;color:rgba(255,255,255,0.7);margin-bottom:4px;}
+    .cb a{font-size:15px;font-weight:700;color:white;text-decoration:none;}
+
+    /* Mobile */
+    @media (max-width:640px){
+      .toolbar{padding:8px 14px;flex-wrap:nowrap;}
+      .tb-tag{display:none;}
+      .btn-back{padding:7px 10px;font-size:12px;}
+      .btn-print{padding:7px 10px;font-size:12px;}
+      .slides{padding:58px 10px 28px;gap:14px;}
+      .slide{aspect-ratio:unset;min-height:auto;}
+      .s1-inner{padding:28px 18px;}
+      .sp{padding:24px 18px;}
+      .sdark{padding:24px 18px;}
+      .s6p{padding:14px 14px;}
+      .s8{padding:28px 18px;}
+      .pain-grid{grid-template-columns:1fr;}
+      .fg3{grid-template-columns:1fr;}
+      .msr{grid-template-columns:repeat(2,1fr);}
+      .steps-row{gap:8px;}
+      .sp-pill{min-width:70px;padding:10px 12px;}
+      .sum-t{font-size:11px;}
+      .sum-t td,.sum-t th{padding:7px 8px;}
+    }
+
+    @media print{
+      body{background:white;}
+      .toolbar{display:none!important;}
+      .slides{padding:0;gap:0;max-width:100%;}
+      .slide{border-radius:0;box-shadow:none;page-break-after:always;aspect-ratio:16/9;height:auto;min-height:100vh;}
+    }
+  </style>
+</head>
+<body>
+
+<div class="toolbar">
+  <div class="tb-left">
+    <span class="tb-logo">QRpruf</span>
+    <span class="tb-tag" data-i18n="tag">Proposition 02 — Agent Network Platform</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px;">
+    <div class="lang-switcher">
+      <button class="lang-btn active" onclick="setLang('en')">EN</button>
+      <button class="lang-btn" onclick="setLang('zh')">中文</button>
+    </div>
+    <a href="index.html" class="btn-back" data-i18n="back">← Back</a>
+    <button class="btn-print" onclick="window.print()" data-i18n="print">🖨 Save as PDF</button>
+  </div>
+</div>
+
+<div class="slides">
+
+  <!-- SLIDE 1: COVER -->
+  <div class="slide s1">
+    <div class="s1-inner">
+      <div class="s1-badge">🤝 <span data-i18n="s1_badge">Proposition 02 · Internal Platform</span></div>
+      <h1><span data-i18n="s1_h1a">Agent & Distributor</span><br><span data-i18n="s1_h1b">Network Platform</span></h1>
+      <p class="s1-sub" data-i18n="s1_sub">Which agent brought you the most revenue last year? Know in 3 seconds.</p>
+      <div class="s1-meta">
+        <span>🔒 <span data-i18n="s1_conf">Confidential Proposal</span></span>
+        <span>📅 2026</span>
+        <span>✉️ schatwiti@sanadidari.com</span>
+      </div>
+    </div>
+    <span class="slide-num light">1 / 8</span>
+  </div>
+
+  <!-- SLIDE 2: PROBLEM -->
+  <div class="slide sp">
+    <div>
+      <span class="slide-tag st-red" data-i18n="s2_tag">The Problem Today</span>
+      <h2 data-i18n="s2_h2">Your agent network runs on Excel and WeChat.</h2>
+      <div class="pain-grid">
+        <div class="pain-card"><span class="pi">📊</span><h4 data-i18n="pa_t">No Performance Data</h4><p data-i18n="pa_d">You don't know which agents are performing and which are inactive — there is no real-time visibility.</p></div>
+        <div class="pain-card"><span class="pi">💰</span><h4 data-i18n="pb_t">Manual Commissions</h4><p data-i18n="pb_d">Commissions are calculated manually on Excel every month. Errors and disputes are frequent.</p></div>
+        <div class="pain-card"><span class="pi">🗺️</span><h4 data-i18n="pc_t">Territory Conflicts</h4><p data-i18n="pc_d">No clear territory rules — agents step on each other's clients, causing conflicts and lost revenue.</p></div>
+        <div class="pain-card"><span class="pi">💬</span><h4 data-i18n="pd_t">WeChat Management</h4><p data-i18n="pd_d">Agent relationships managed via WeChat groups — unprofessional, unsearchable, and hard to scale.</p></div>
+      </div>
+    </div>
+    <span class="slide-num">2 / 8</span>
+  </div>
+
+  <!-- SLIDE 3: SOLUTION -->
+  <div class="slide sdark">
+    <div class="sdark-inner">
+      <span class="slide-tag st-navy" data-i18n="s3_tag">Our Solution</span>
+      <h2 style="color:white;" data-i18n="s3_h2">A dedicated platform for your entire agent network</h2>
+      <div class="sol-points">
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol1">Assign territories clearly — every agent knows exactly what products they represent in which country.</p></div>
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol2">Set commission rules once by product, category, or volume tier — calculations run automatically every month.</p></div>
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol3">Real-time performance dashboard — rank your agents by revenue, see who is active and who needs support.</p></div>
+        <div class="sol-point"><div class="sol-check">✓</div><p data-i18n="sol4">Each agent gets their own mini-portal to manage their local clients and track their own commissions.</p></div>
+      </div>
+    </div>
+    <span class="slide-num light">3 / 8</span>
+  </div>
+
+  <!-- SLIDE 4: FEATURES A -->
+  <div class="slide sp">
+    <div style="width:100%">
+      <span class="slide-tag st-gold" data-i18n="s4_tag">Key Features (1/2)</span>
+      <h2 data-i18n="s4_h2">Full control over your sales network</h2>
+      <div class="fg3">
+        <div class="fb"><span class="fi">🗺️</span><h4 data-i18n="f1t">Agent Profiles & Territories</h4><p data-i18n="f1d">Define who represents what, where. Clear territory rules eliminate agent conflicts automatically.</p></div>
+        <div class="fb"><span class="fi">💰</span><h4 data-i18n="f2t">Commission Engine</h4><p data-i18n="f2d">Rules by product, category, or volume tier. Month-end calculations fully automated — no Excel.</p></div>
+        <div class="fb"><span class="fi">📊</span><h4 data-i18n="f3t">Performance Dashboard</h4><p data-i18n="f3d">Real-time agent ranking. Monthly volume, conversion rate, and growth trends at a glance.</p></div>
+      </div>
+    </div>
+    <span class="slide-num">4 / 8</span>
+  </div>
+
+  <!-- SLIDE 5: FEATURES B -->
+  <div class="slide sp">
+    <div style="width:100%">
+      <span class="slide-tag st-gold" data-i18n="s5_tag">Key Features (2/2)</span>
+      <h2 data-i18n="s5_h2">Motivate agents, eliminate disputes</h2>
+      <div class="fg3">
+        <div class="fb"><span class="fi">🏪</span><h4 data-i18n="f4t">Agent Mini-Portal</h4><p data-i18n="f4d">Each agent has a private space to manage their local clients, place orders, and track their own earnings.</p></div>
+        <div class="fb"><span class="fi">🏆</span><h4 data-i18n="f5t">Incentives & Bonuses</h4><p data-i18n="f5d">Set quarterly targets. Bonuses trigger automatically when goals are exceeded — no admin overhead.</p></div>
+        <div class="fb"><span class="fi">🧾</span><h4 data-i18n="f6t">Commission History</h4><p data-i18n="f6d">Full audit trail for every agent — paid, pending, disputed. Transparent records eliminate all conflicts.</p></div>
+      </div>
+    </div>
+    <span class="slide-num">5 / 8</span>
+  </div>
+
+  <!-- SLIDE 6: DASHBOARD MOCKUP -->
+  <div class="slide s6p">
+    <div style="margin-bottom:10px;">
+      <span class="slide-tag st-gold" data-i18n="s6_tag">Dashboard Preview</span>
+      <h2 style="font-size:clamp(16px,2.4vw,26px);color:var(--navy);" data-i18n="s6_h2">Your agent network — at a glance</h2>
+    </div>
+    <div class="mp">
+      <div class="mbar">
+        <div class="mdd" style="background:#FF5F57"></div>
+        <div class="mdd" style="background:#FEBC2E"></div>
+        <div class="mdd" style="background:#28C840"></div>
+        <span class="mbar-t" data-i18n="s6_mt">AgentHub — Network Dashboard</span>
+      </div>
+      <div class="mc">
+        <div class="msb">
+          <div class="msi a">👥</div>
+          <div class="msi">💰</div>
+          <div class="msi">🗺️</div>
+          <div class="msi">📊</div>
+          <div class="msi">🏆</div>
+        </div>
+        <div class="mm">
+          <div class="msr">
+            <div class="msc"><div class="msv gc">12</div><div class="msl" data-i18n="ms1">Active Agents</div></div>
+            <div class="msc"><div class="msv">$8,420</div><div class="msl" data-i18n="ms2">Monthly Commissions</div></div>
+            <div class="msc"><div class="msv">5</div><div class="msl" data-i18n="ms3">Countries</div></div>
+            <div class="msc"><div class="msv gc">94%</div><div class="msl" data-i18n="ms4">Target Achievement</div></div>
+          </div>
+          <div class="mtbl">
+            <div class="mtr"><span class="mfl">🇲🇦</span><span class="mn">Karim B. — Morocco</span><span class="ma">$34,200</span><span class="mb bg" data-i18n="tg">● Gold</span></div>
+            <div class="mtr"><span class="mfl">🇩🇿</span><span class="mn">Amir N. — Algeria</span><span class="ma">$28,100</span><span class="mb bs" data-i18n="ts">● Silver</span></div>
+            <div class="mtr"><span class="mfl">🇫🇷</span><span class="mn">Michel D. — France</span><span class="ma">$19,400</span><span class="mb bs" data-i18n="ts">● Silver</span></div>
+          </div>
+          <div class="pw">
+            <div class="pr"><span class="pl">🇲🇦 Karim</span><div class="pb"><div class="pf pfg" style="width:94%"></div></div><span class="pv">94%</span></div>
+            <div class="pr"><span class="pl">🇩🇿 Amir</span><div class="pb"><div class="pf pft" style="width:78%"></div></div><span class="pv">78%</span></div>
+            <div class="pr"><span class="pl">🇫🇷 Michel</span><div class="pb"><div class="pf pfs" style="width:61%"></div></div><span class="pv">61%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <span class="slide-num">6 / 8</span>
+  </div>
+
+  <!-- SLIDE 7: SUMMARY -->
+  <div class="slide sp">
+    <div style="width:100%">
+      <span class="slide-tag st-gold" data-i18n="s7_tag">At a Glance</span>
+      <h2 data-i18n="s7_h2">Transform how you manage your agents</h2>
+      <table class="sum-t">
+        <thead><tr><th data-i18n="th1">Challenge</th><th data-i18n="th2">Today</th><th data-i18n="th3">With AgentHub</th></tr></thead>
+        <tbody>
+          <tr><td data-i18n="r1f">Agent Performance</td><td data-i18n="r1b">❓ No real visibility</td><td>✅ <span data-i18n="r1a">Real-time ranking dashboard</span></td></tr>
+          <tr><td data-i18n="r2f">Commission Calculation</td><td data-i18n="r2b">📋 Manual Excel, monthly</td><td>✅ <span data-i18n="r2a">Fully automated, instant</span></td></tr>
+          <tr><td data-i18n="r3f">Territory Management</td><td data-i18n="r3b">💬 Informal WeChat agreements</td><td>✅ <span data-i18n="r3a">Formal rules, zero conflicts</span></td></tr>
+          <tr><td data-i18n="r4f">Agent Motivation</td><td data-i18n="r4b">🤷 No formal incentives</td><td>✅ <span data-i18n="r4a">Automatic bonuses & tiers</span></td></tr>
+          <tr><td data-i18n="r5f">Commission Disputes</td><td data-i18n="r5b">⚡ Frequent arguments</td><td>✅ <span data-i18n="r5a">Full audit trail, transparent</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <span class="slide-num">7 / 8</span>
+  </div>
+
+  <!-- SLIDE 8: NEXT STEPS -->
+  <div class="slide s8">
+    <div class="s8-in">
+      <h2 data-i18n="s8_h2">Ready to take control of your network?</h2>
+      <p class="s8-sub" data-i18n="s8_sub">Let's define the scope, timeline, and investment together — and get your agent network running on a real system.</p>
+      <div class="steps-row">
+        <div class="sp-pill"><span class="sn">01</span><span class="sl" data-i18n="st1">Discovery Call</span></div>
+        <div class="sp-pill"><span class="sn">02</span><span class="sl" data-i18n="st2">Scope & Design</span></div>
+        <div class="sp-pill"><span class="sn">03</span><span class="sl" data-i18n="st3">Development</span></div>
+        <div class="sp-pill"><span class="sn">04</span><span class="sl" data-i18n="st4">Go Live</span></div>
+      </div>
+      <div class="cb">
+        <p data-i18n="ct_lbl">Contact us to get started</p>
+        <a href="mailto:schatwiti@sanadidari.com">✉️ schatwiti@sanadidari.com</a>
+        <a href="mailto:schatwiti@gmail.com" style="font-size:13px;opacity:0.65;display:block;margin-top:4px;color:white;text-decoration:none;">schatwiti@gmail.com</a>
+      </div>
+    </div>
+    <span class="slide-num light">8 / 8</span>
+  </div>
+
+</div>
+
+<script>
+const T = {
+  en: {
+    tag:'Proposition 02 — Agent Network Platform', back:'← Back', print:'🖨 Save as PDF',
+    s1_badge:'Proposition 02 · Internal Platform', s1_h1a:'Agent & Distributor', s1_h1b:'Network Platform',
+    s1_sub:'Which agent brought you the most revenue last year? Know in 3 seconds.', s1_conf:'Confidential Proposal',
+    s2_tag:'The Problem Today', s2_h2:'Your agent network runs on Excel and WeChat.',
+    pa_t:'No Performance Data', pa_d:"You don't know which agents are performing and which are inactive — there is no real-time visibility.",
+    pb_t:'Manual Commissions', pb_d:'Commissions are calculated manually on Excel every month. Errors and disputes are frequent.',
+    pc_t:'Territory Conflicts', pc_d:"No clear territory rules — agents step on each other's clients, causing conflicts and lost revenue.",
+    pd_t:'WeChat Management', pd_d:'Agent relationships managed via WeChat groups — unprofessional, unsearchable, and hard to scale.',
+    s3_tag:'Our Solution', s3_h2:'A dedicated platform for your entire agent network',
+    sol1:'Assign territories clearly — every agent knows exactly what products they represent in which country.',
+    sol2:'Set commission rules once by product, category, or volume tier — calculations run automatically every month.',
+    sol3:'Real-time performance dashboard — rank your agents by revenue, see who is active and who needs support.',
+    sol4:'Each agent gets their own mini-portal to manage their local clients and track their own commissions.',
+    s4_tag:'Key Features (1/2)', s4_h2:'Full control over your sales network',
+    f1t:'Agent Profiles & Territories', f1d:'Define who represents what, where. Clear territory rules eliminate agent conflicts automatically.',
+    f2t:'Commission Engine', f2d:'Rules by product, category, or volume tier. Month-end calculations fully automated — no Excel.',
+    f3t:'Performance Dashboard', f3d:'Real-time agent ranking. Monthly volume, conversion rate, and growth trends at a glance.',
+    s5_tag:'Key Features (2/2)', s5_h2:'Motivate agents, eliminate disputes',
+    f4t:'Agent Mini-Portal', f4d:"Each agent has a private space to manage their local clients, place orders, and track their own earnings.",
+    f5t:'Incentives & Bonuses', f5d:'Set quarterly targets. Bonuses trigger automatically when goals are exceeded — no admin overhead.',
+    f6t:'Commission History', f6d:'Full audit trail for every agent — paid, pending, disputed. Transparent records eliminate all conflicts.',
+    s6_tag:'Dashboard Preview', s6_h2:'Your agent network — at a glance', s6_mt:'AgentHub — Network Dashboard',
+    ms1:'Active Agents', ms2:'Monthly Commissions', ms3:'Countries', ms4:'Target Achievement',
+    tg:'● Gold', ts:'● Silver',
+    s7_tag:'At a Glance', s7_h2:'Transform how you manage your agents',
+    th1:'Challenge', th2:'Today', th3:'With AgentHub',
+    r1f:'Agent Performance', r1b:'❓ No real visibility', r1a:'Real-time ranking dashboard',
+    r2f:'Commission Calculation', r2b:'📋 Manual Excel, monthly', r2a:'Fully automated, instant',
+    r3f:'Territory Management', r3b:'💬 Informal WeChat agreements', r3a:'Formal rules, zero conflicts',
+    r4f:'Agent Motivation', r4b:'🤷 No formal incentives', r4a:'Automatic bonuses & tiers',
+    r5f:'Commission Disputes', r5b:'⚡ Frequent arguments', r5a:'Full audit trail, transparent',
+    s8_h2:'Ready to take control of your network?', s8_sub:"Let's define the scope, timeline, and investment together — and get your agent network running on a real system.",
+    st1:'Discovery Call', st2:'Scope & Design', st3:'Development', st4:'Go Live', ct_lbl:'Contact us to get started'
+  },
+  zh: {
+    tag:'方案二 — 代理商网络平台', back:'← 返回', print:'🖨 保存为PDF',
+    s1_badge:'方案二 · 内部管理平台', s1_h1a:'代理商与分销商', s1_h1b:'管理平台',
+    s1_sub:'去年哪个代理商给您带来了最多收入？3秒钟就能知道。', s1_conf:'机密提案',
+    s2_tag:'当前痛点', s2_h2:'您的代理商网络依赖Excel和微信运营。',
+    pa_t:'缺乏绩效数据', pa_d:'您无法知道哪些代理商表现出色，哪些处于不活跃状态——没有实时可视性。',
+    pb_t:'手动计算佣金', pb_d:'每月需要在Excel中手动计算佣金，错误和纠纷时有发生。',
+    pc_t:'区域冲突', pc_d:'没有明确的区域规则——代理商争抢彼此的客户，导致冲突和收入损失。',
+    pd_t:'微信管理', pd_d:'通过微信群组管理代理商关系——不专业、无法检索、难以扩展。',
+    s3_tag:'我们的解决方案', s3_h2:'一个专为您的代理商网络设计的专属平台',
+    sol1:'清晰分配销售区域——每位代理商都清楚地知道自己在哪个国家代理哪些产品。',
+    sol2:'按产品、类别或销量层级设置一次佣金规则——每月自动完成计算，无需人工干预。',
+    sol3:'实时绩效仪表盘——按收入对代理商进行排名，了解谁活跃、谁需要支持。',
+    sol4:'每位代理商拥有自己的迷你门户，可以管理本地客户并追踪自己的佣金。',
+    s4_tag:'核心功能（1/2）', s4_h2:'全面掌控您的销售网络',
+    f1t:'代理商档案与区域管理', f1d:'明确定义谁在哪里代理什么产品。清晰的区域规则自动消除代理商之间的冲突。',
+    f2t:'佣金计算引擎', f2d:'按产品、类别或销量层级设置规则，月末计算全部自动完成——告别Excel。',
+    f3t:'绩效仪表盘', f3d:'代理商实时排名，月度销量、转化率和增长趋势一目了然。',
+    s5_tag:'核心功能（2/2）', s5_h2:'激励代理商，消除纠纷',
+    f4t:'代理商专属门户', f4d:'每位代理商拥有私人空间，可以管理本地客户、代客下单并追踪自己的收益。',
+    f5t:'激励与奖金追踪', f5d:'设置季度目标，超额完成时奖金自动触发——无需额外行政工作。',
+    f6t:'佣金历史记录', f6d:'每位代理商的完整佣金审计记录——已付、待付、争议中。透明记录彻底消除纠纷。',
+    s6_tag:'仪表盘预览', s6_h2:'您的代理商网络——一目了然', s6_mt:'代理管理中心 — 网络总览',
+    ms1:'活跃代理商', ms2:'本月佣金', ms3:'覆盖国家', ms4:'目标达成率',
+    tg:'● 黄金', ts:'● 白银',
+    s7_tag:'一览无余', s7_h2:'彻底改变您管理代理商的方式',
+    th1:'挑战', th2:'现状', th3:'使用AgentHub后',
+    r1f:'代理商绩效', r1b:'❓ 无实时可视性', r1a:'实时排名仪表盘',
+    r2f:'佣金计算', r2b:'📋 每月手动Excel', r2a:'全自动，即时完成',
+    r3f:'区域管理', r3b:'💬 微信口头协议', r3a:'正式规则，零冲突',
+    r4f:'代理商激励', r4b:'🤷 无正式激励机制', r4a:'自动奖金与层级制度',
+    r5f:'佣金纠纷', r5b:'⚡ 频繁争执', r5a:'完整审计记录，透明清晰',
+    s8_h2:'准备好掌控您的代理商网络了吗？', s8_sub:'让我们共同明确范围、时间表和投资方案——让您的代理商网络在真正的系统上运行。',
+    st1:'需求沟通', st2:'范围与设计', st3:'开发实施', st4:'正式上线', ct_lbl:'联系我们开始合作'
+  }
+};
+function setLang(l){
+  document.querySelectorAll('.lang-btn').forEach(b=>b.classList.remove('active'));
+  document.querySelector(`.lang-btn[onclick="setLang('${l}')"]`).classList.add('active');
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(T[l][k]!==undefined)el.textContent=T[l][k];});
+  document.body.style.fontFamily=l==='zh'?"'Noto Sans SC','Inter',sans-serif":"'Inter','Noto Sans SC',sans-serif";
+  document.title=l==='zh'?'提案PPT — 代理商与分销商管理平台':'Pitch Deck — Agent & Distributor Network Platform';
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "signInTitle": "تسجيل الدخول",
+  "signUpTitle": "إنشاء حساب",
+  "createAccount": "إنشاء حساب جديد",
+  "nameLabel": "الاسم",
+  "emailLabel": "البريد الإلكتروني",
+  "passwordLabel": "كلمة المرور",
+  "submit": "إرسال",
+  "welcome": "مرحباً بك",
+  "personalUse": "استعمال شخصي"
+}

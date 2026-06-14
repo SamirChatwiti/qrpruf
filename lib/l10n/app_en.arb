@@ -1,0 +1,11 @@
+{
+  "signInTitle": "Sign In",
+  "signUpTitle": "Sign Up",
+  "createAccount": "Create Account",
+  "nameLabel": "Name",
+  "emailLabel": "Email",
+  "passwordLabel": "Password",
+  "submit": "Submit",
+  "welcome": "Welcome",
+  "personalUse": "Personal Use"
+}

@@ -1,0 +1,96 @@
+name: qrpruf
+description: "A new Flutter project."
+publish_to: 'none'
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+  flutter_riverpod: ^3.3.1
+  go_router: ^17.1.0
+  supabase_flutter: ^2.12.0
+  shared_preferences: ^2.5.4
+  flutter_secure_storage: ^10.0.0
+  device_info_plus: ^12.3.0
+  google_mlkit_text_recognition: ^0.15.1
+  camera: ^0.12.0
+  path_provider: ^2.1.5
+  permission_handler: ^12.0.1
+  image_picker: ^1.2.1
+  image: ^4.8.0
+  video_player: ^2.11.1
+  audioplayers: ^6.6.0
+  url_launcher: ^6.3.2
+  geolocator: ^14.0.2
+  geocoding: ^4.0.0
+  encrypt: ^5.0.3
+  crypto: ^3.0.7
+  flutter_svg: ^2.2.4
+  intl: ^0.20.2
+  flutter_dotenv: ^6.0.0
+  qr_flutter: ^4.1.0
+  file_picker: ^8.0.7
+  record: ^6.1.2
+  local_auth: ^2.3.0
+  google_maps_flutter: ^2.6.0
+  video_compress: ^3.1.4
+  open_filex: ^4.5.0
+  flutter_image_compress: ^2.3.0
+  google_mlkit_document_scanner: ^0.4.1
+  flutter_localizations:
+    sdk: flutter
+  http: ^1.6.0
+  mobile_scanner: ^7.2.0
+  app_links: ^7.0.0
+  app_settings: ^7.0.0
+  share_plus: ^10.1.4
+  pdf: ^3.10.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  flutter_launcher_icons: ^0.13.1
+  mocktail: ^1.0.4
+
+flutter_launcher_icons:
+  android: "launcher_icon"
+  ios: true
+  image_path: "assets/images/logomain.png"
+  min_sdk_android: 21
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - .env
+    - assets/
+    - assets/images/
+    - assets/audio/
+    - assets/fonts/
+    - assets/images/home/
+    - assets/images/chakhsi/
+    - assets/images/huissier/
+    - assets/images/mohami/
+    - assets/images/maquette1/img/
+    - assets/images/onboard/
+    - assets/images/email/
+    - assets/images/tel/
+    - assets/images/mdp/
+    - assets/images/nom_prenom/
+    - assets/images/login/
+    - assets/images/avatar/
+    - assets/images/pack/
+    - assets/images/notif/
+    - assets/images/sans_preuve/
+
+  fonts:
+    - family: Cairo
+      fonts:
+        - asset: assets/fonts/cairo.ttf

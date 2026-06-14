@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=390px, initial-scale=1.0">
+  <title>QRpruf - Sélection Profil</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Cairo', sans-serif;
+      background: #F8FFFE;
+      width: 390px;
+      min-height: 844px;
+    }
+    .status-bar {
+      background: white;
+      color: #333;
+      padding: 10px 20px 6px;
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+    }
+    .top-nav {
+      background: white;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border-bottom: 1px solid #F0F0F0;
+    }
+    .back-btn {
+      font-size: 20px;
+      color: #333;
+      cursor: pointer;
+    }
+    .page-title {
+      font-size: 17px;
+      font-weight: 700;
+      color: #222;
+      flex: 1;
+      text-align: center;
+    }
+    .content {
+      padding: 20px 16px 100px;
+    }
+    .stepper {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin-bottom: 28px;
+      direction: ltr;
+    }
+    .step {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+    }
+    .step-circle {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .step-circle.active {
+      background: #4CC0C0;
+      color: white;
+    }
+    .step-circle.inactive {
+      background: #F0F0F0;
+      color: #AAAAAA;
+    }
+    .step-label { font-size: 10px; color: #AAAAAA; }
+    .step-label.active { color: #4CC0C0; }
+    .step-line {
+      width: 48px;
+      height: 2px;
+      background: #E0E0E0;
+      margin: 0 4px;
+      margin-bottom: 18px;
+    }
+    .section-title {
+      font-size: 14px;
+      font-weight: 700;
+      color: #333;
+      margin-bottom: 14px;
+      text-align: right;
+    }
+    .profiles-scroll {
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      margin-bottom: 24px;
+      padding-bottom: 4px;
+      direction: rtl;
+      -webkit-overflow-scrolling: touch;
+    }
+    .profiles-scroll::-webkit-scrollbar { display: none; }
+    .profile-chip {
+      flex-shrink: 0;
+      background: white;
+      border: 1.5px solid #E0E0E0;
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-width: 80px;
+      cursor: pointer;
+    }
+    .profile-chip.active {
+      background: #4CC0C0;
+      border-color: #4CC0C0;
+    }
+    .profile-chip .chip-icon { font-size: 22px; }
+    .profile-chip .chip-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: #555;
+      text-align: center;
+      line-height: 1.3;
+    }
+    .profile-chip.active .chip-label { color: white; }
+    .purpose-list { display: flex; flex-direction: column; gap: 10px; }
+    .purpose-item {
+      background: white;
+      border-radius: 14px;
+      padding: 16px 18px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      border: 1.5px solid #EEEEEE;
+      cursor: pointer;
+    }
+    .purpose-item.selected {
+      border-color: #4CC0C0;
+      background: #F0FAFA;
+    }
+    .purpose-icon {
+      width: 38px; height: 38px;
+      background: #F5F5F5;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .purpose-item.selected .purpose-icon { background: #E0F5F5; }
+    .purpose-text { flex: 1; }
+    .purpose-title { font-size: 13.5px; font-weight: 700; color: #333; }
+    .purpose-desc { font-size: 11px; color: #999; margin-top: 3px; line-height: 1.4; }
+    .radio {
+      width: 20px; height: 20px;
+      border-radius: 50%;
+      border: 2px solid #DDDDDD;
+      flex-shrink: 0;
+    }
+    .radio.checked {
+      border-color: #4CC0C0;
+      background: #4CC0C0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .radio.checked::after {
+      content: '';
+      width: 8px; height: 8px;
+      background: white;
+      border-radius: 50%;
+    }
+    .btn-main {
+      position: fixed;
+      bottom: 70px;
+      left: 16px; right: 16px;
+      background: #4CC0C0;
+      color: white;
+      border: none;
+      border-radius: 14px;
+      padding: 17px;
+      font-family: 'Cairo', sans-serif;
+      font-size: 16px;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      gap: 8px;
+      box-shadow: 0 4px 16px rgba(76,192,192,0.35);
+    }
+    .bottom-nav {
+      position: fixed;
+      bottom: 0;
+      width: 390px;
+      background: white;
+      border-top: 1px solid #F0F0F0;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 10px 0 16px;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center;
+      gap: 3px; font-size: 11px; color: #BBBBBB;
+    }
+    .nav-icon { font-size: 22px; }
+    .nav-center {
+      width: 52px; height: 52px;
+      background: #4CC0C0;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: white; font-size: 28px;
+      margin-top: -26px;
+      box-shadow: 0 4px 12px rgba(76,192,192,0.4);
+    }
+    .moon-icon { font-size: 20px; color: #BBBBBB; }
+  </style>
+</head>
+<body>
+
+  <div class="status-bar">
+    <span>10:32</span>
+    <span>WiFi ▪ 84%</span>
+  </div>
+
+  <div class="top-nav">
+    <span class="back-btn">‹</span>
+    <span class="page-title">اختيار نوع التوثيق</span>
+    <span style="width:24px"></span>
+  </div>
+
+  <div class="content">
+    <div class="stepper">
+      <div class="step">
+        <div class="step-circle active">1</div>
+        <span class="step-label active">الخطوة 1</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-circle inactive">2</div>
+        <span class="step-label">الخطوة 2</span>
+      </div>
+      <div class="step-line"></div>
+      <div class="step">
+        <div class="step-circle inactive">3</div>
+        <span class="step-label">الخطوة 3</span>
+      </div>
+    </div>
+
+    <div class="section-title">اختر نوع المستخدم</div>
+
+    <div class="profiles-scroll">
+      <div class="profile-chip">
+        <span class="chip-icon">👤</span>
+        <span class="chip-label">استعمال شخصي</span>
+      </div>
+      <div class="profile-chip active">
+        <span class="chip-icon">⚖️</span>
+        <span class="chip-label">مفوض قضائي</span>
+      </div>
+      <div class="profile-chip">
+        <span class="chip-icon">📜</span>
+        <span class="chip-label">موثق</span>
+      </div>
+      <div class="profile-chip">
+        <span class="chip-icon">⚡</span>
+        <span class="chip-label">عدل</span>
+      </div>
+      <div class="profile-chip">
+        <span class="chip-icon">🏛️</span>
+        <span class="chip-label">محامي</span>
+      </div>
+    </div>
+
+    <div class="section-title">اختيار الغرض</div>
+
+    <div class="purpose-list">
+      <div class="purpose-item selected">
+        <div class="purpose-icon">📍</div>
+        <div class="purpose-text">
+          <div class="purpose-title">إثبات تواجد أو قيام بفعل</div>
+          <div class="purpose-desc">لإثبات أن شخصًا ما كان موجودًا أو قام بشيء في وقت ومكان محددين</div>
+        </div>
+        <div class="radio checked"></div>
+      </div>
+
+      <div class="purpose-item">
+        <div class="purpose-icon">🕐</div>
+        <div class="purpose-text">
+          <div class="purpose-title">توثيق موعد أو حضور أو انتظار</div>
+          <div class="purpose-desc">لتوثيق الحضور، التأخر، الانتظار، أو الالتزام بموعد</div>
+        </div>
+        <div class="radio"></div>
+      </div>
+
+      <div class="purpose-item">
+        <div class="purpose-icon">📢</div>
+        <div class="purpose-text">
+          <div class="purpose-title">توثيق واقعة أو حدث معيّن</div>
+          <div class="purpose-desc">لتسجيل ما وقع كما هو، خاصة في الحالات غير المتوقعة</div>
+        </div>
+        <div class="radio"></div>
+      </div>
+
+      <div class="purpose-item">
+        <div class="purpose-icon">📦</div>
+        <div class="purpose-text">
+          <div class="purpose-title">توثيق تسليم أو استلام</div>
+          <div class="purpose-desc">لإثبات تسليم أو استلام شيء مادي أو رقمي</div>
+        </div>
+        <div class="radio"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-main">☞ &nbsp; ابدأ التوثيق الآن</button>
+
+  <div class="bottom-nav">
+    <span class="moon-icon">🌙</span>
+    <div class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span>حسابي</span>
+    </div>
+    <div class="nav-center">+</div>
+    <div class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span>الرئيسية</span>
+    </div>
+  </div>
+
+</body>
+</html>

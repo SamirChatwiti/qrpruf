@@ -1,0 +1,11 @@
+{
+  "signInTitle": "Se connecter",
+  "signUpTitle": "S'inscrire",
+  "createAccount": "Créer un compte",
+  "nameLabel": "Nom",
+  "emailLabel": "Email",
+  "passwordLabel": "Mot de passe",
+  "submit": "Envoyer",
+  "welcome": "Bienvenue",
+  "personalUse": "Usage personnel"
+}
