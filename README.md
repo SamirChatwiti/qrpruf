@@ -42,15 +42,18 @@ Instead of trusting a user declaration, the system produces a structured proof o
 
 ---
 
-## Product Screenshots
+<h2>Product Screenshots</h2>
 
-| Dashboard | Proof Purpose Selection | Evidence Review |
-|---|---|---|
-| ![QRPRUF Dashboard](assets/screenshots/01-dashboard.jpeg) | ![Proof Purpose Selection](assets/screenshots/02-proof-purpose-selection.jpeg) | ![Evidence Review](assets/screenshots/03-evidence-review.jpeg) |
+<p align="center">
+  <img src="assets/screenshots/01-dashboard.jpeg" width="220" />
+  <img src="assets/screenshots/02-proof-purpose-selection.jpeg" width="220" />
+  <img src="assets/screenshots/03-evidence-review.jpeg" width="220" />
+</p>
 
-| QR Badge Generated | Proof Verification |
-|---|---|
-| ![QR Badge Generated](assets/screenshots/04-qr-badge-generated.jpeg) | ![Proof Verification Valid](assets/screenshots/05-proof-verification-valid.jpeg) |
+<p align="center">
+  <img src="assets/screenshots/04-qr-badge-generated.jpeg" width="220" />
+  <img src="assets/screenshots/05-proof-verification-valid.jpeg" width="220" />
+</p>
 
 ---
 
